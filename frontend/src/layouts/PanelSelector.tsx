@@ -2,14 +2,14 @@ import { Flex, SegmentedControl } from '@mantine/core';
 import { Columns2, PanelLeftClose, PanelRightClose } from 'lucide-react';
 
 import type { RefObject } from 'react';
-import type { ImperativePanelHandle } from 'react-resizable-panels';
+import type { PanelImperativeHandle } from 'react-resizable-panels';
 import type { PanelLayoutType } from './types';
 
 interface PanelSelectorProps {
   mainPanelLyout: PanelLayoutType;
   setMainPanelLyout: (value: PanelLayoutType) => void;
-  dataPanelImperativeHandleRef: RefObject<ImperativePanelHandle | null>;
-  templatePanelImperativeHandleRef: RefObject<ImperativePanelHandle | null>;
+  dataPanelImperativeHandleRef: RefObject<PanelImperativeHandle | null>;
+  templatePanelImperativeHandleRef: RefObject<PanelImperativeHandle | null>;
 }
 
 export const PanelSelector = ({

@@ -4,23 +4,34 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  outline: none;
 }
 
 .ResizeHandleInner {
   background-color: #8b9094;
-  padding: 0.1rem;
   border-radius: 0.75rem;
-  transition: background-color 0.2s linear;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-.ResizeHandleOuter[data-resize-handle-active] .ResizeHandleInner {
-  background-color: #547180;
-}
-
-.ResizeHandleOuter[data-panel-group-direction='horizontal'] .ResizeHandleInner {
+.ResizeHandleOuter[aria-orientation='vertical'] .ResizeHandleInner {
+  width: 0.2rem;
   height: 2rem;
 }
 
-.ResizeHandleOuter[data-panel-group-direction='vertical'] .ResizeHandleInner {
+.ResizeHandleOuter[aria-orientation='horizontal'] .ResizeHandleInner {
   width: 2rem;
+  height: 0.2rem;
+}
+
+.ResizeHandleOuter:hover .ResizeHandleInner,
+.ResizeHandleOuter[data-separator='active'] .ResizeHandleInner {
+  background-color: var(--mantine-primary-color-filled);
+  box-shadow: 0 0 0 0.15rem var(--mantine-primary-color-light);
+}
+
+.ResizeHandleOuter:focus-visible .ResizeHandleInner {
+  background-color: var(--mantine-primary-color-filled);
+  box-shadow: 0 0 0 0.15rem var(--mantine-primary-color-light);
 }

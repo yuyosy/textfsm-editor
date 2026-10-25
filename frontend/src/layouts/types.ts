@@ -1,14 +1,14 @@
 import type { JSX, RefObject } from 'react';
-import type { ImperativePanelHandle } from 'react-resizable-panels';
+import type { PanelImperativeHandle } from 'react-resizable-panels';
 import type { ModalId } from './modals/types';
 
 export type PanelLayoutType = 'both' | 'data' | 'template';
 
 export interface PanelRefs {
-  data: RefObject<ImperativePanelHandle | null>;
-  template: RefObject<ImperativePanelHandle | null>;
-  notification: RefObject<ImperativePanelHandle | null>;
-  results: RefObject<ImperativePanelHandle | null>;
+  data: RefObject<PanelImperativeHandle | null>;
+  template: RefObject<PanelImperativeHandle | null>;
+  notification: RefObject<PanelImperativeHandle | null>;
+  results: RefObject<PanelImperativeHandle | null>;
 }
 
 export interface DisclosureActions {

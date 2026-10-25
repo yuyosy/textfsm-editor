@@ -1,4 +1,4 @@
-import { type ImperativePanelHandle, Panel } from 'react-resizable-panels';
+import { Panel, type PanelImperativeHandle } from 'react-resizable-panels';
 
 import {
   ActionIcon,
@@ -26,7 +26,7 @@ import type { RefObject } from 'react';
 import type { Notification } from '@/types';
 
 interface NotificationPanelProps {
-  panelRef: RefObject<ImperativePanelHandle | null>;
+  panelRef: RefObject<PanelImperativeHandle | null>;
   onResizeHandler: () => void;
 }
 
@@ -56,13 +56,13 @@ export const NotificationPanel = ({
   return (
     <Panel
       id="notification-panel"
-      order={2}
-      defaultSize={20}
-      collapsedSize={0}
-      minSize={10}
+      defaultSize="20"
+      collapsedSize="0"
+      minSize="10"
       collapsible={true}
-      ref={panelRef}
+      panelRef={panelRef}
       onResize={onResizeHandler}
+      style={{ overflow: 'hidden' }}
     >
       <Stack gap={0} h="100%" style={{ overflow: 'hidden' }}>
         <Group px={10} py={8} justify="space-between" style={{ flexShrink: 0 }}>

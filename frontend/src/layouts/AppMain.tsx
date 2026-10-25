@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react';
 import {
-  type ImperativePanelHandle,
+  Group,
   Panel,
-  PanelGroup,
+  type PanelImperativeHandle,
+  useDefaultLayout,
 } from 'react-resizable-panels';
 
 import { AppShell, Paper, Stack } from '@mantine/core';
@@ -31,15 +32,19 @@ export const AppMain = () => {
 
   const [mainPanelLyout, setMainPanelLyout] = useState<PanelLayoutType>('both');
 
+  const topLayout = useDefaultLayout({ id: 'top' });
+  const mainLayout = useDefaultLayout({ id: 'main' });
+  const editorLayout = useDefaultLayout({ id: 'editor' });
+
   const addNotification = useSetAtom(addNotificationAtom);
   useAutoRequest(addNotification);
 
   // Ref State
   const panelRefs: PanelRefs = {
-    data: useRef<ImperativePanelHandle>(null),
-    template: useRef<ImperativePanelHandle>(null),
-    notification: useRef<ImperativePanelHandle>(null),
-    results: useRef<ImperativePanelHandle>(null),
+    data: useRef<PanelImperativeHandle>(null),
+    template: useRef<PanelImperativeHandle>(null),
+    notification: useRef<PanelImperativeHandle>(null),
+    results: useRef<PanelImperativeHandle>(null),
   };
 
   const syncDataPanelSegmentedControlsOnResize = () => {
@@ -94,23 +99,25 @@ export const AppMain = () => {
           shadow="xs"
           style={{ overflow: 'hidden' }}
         >
-          <PanelGroup direction="horizontal" autoSaveId="top">
+          <Group id="top" orientation="horizontal" {...topLayout}>
             <Panel
-              defaultSize={80}
-              collapsedSize={0}
-              minSize={10}
+              id="content-panel"
+              defaultSize="80"
+              collapsedSize="0"
+              minSize="10"
               collapsible={true}
+              style={{ overflow: 'hidden' }}
             >
-              <PanelGroup direction="vertical" autoSaveId="main">
+              <Group id="main" orientation="vertical" {...mainLayout}>
                 <Panel
                   id="main-panel"
-                  order={1}
-                  defaultSize={70}
-                  collapsedSize={0}
-                  minSize={10}
+                  defaultSize="70"
+                  collapsedSize="0"
+                  minSize="10"
                   collapsible={true}
+                  style={{ overflow: 'hidden' }}
                 >
-                  <PanelGroup direction="horizontal" autoSaveId="editor">
+                  <Group id="editor" orientation="horizontal" {...editorLayout}>
                     <RawTextEditorPanel
                       panelRef={panelRefs.data}
                       onResizeHandler={syncDataPanelSegmentedControlsOnResize}
@@ -122,21 +129,21 @@ export const AppMain = () => {
                         syncTemplatePanelSegmentedControlsOnResize
                       }
                     />
-                  </PanelGroup>
+                  </Group>
                 </Panel>
                 <ResizeHandle />
                 <ResultViewPanel
                   panelRef={panelRefs.results}
                   onResizeHandler={syncResultViewPanelStateChipOnResize}
                 />
-              </PanelGroup>
+              </Group>
             </Panel>
             <ResizeHandle />
             <NotificationPanel
               panelRef={panelRefs.notification}
               onResizeHandler={syncNotificationPanelStateChipOnResize}
             />
-          </PanelGroup>
+          </Group>
         </Paper>
       </Stack>
     </AppShell.Main>

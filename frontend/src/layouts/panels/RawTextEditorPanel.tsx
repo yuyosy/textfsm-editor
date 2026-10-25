@@ -1,4 +1,4 @@
-import { type ImperativePanelHandle, Panel } from 'react-resizable-panels';
+import { Panel, type PanelImperativeHandle } from 'react-resizable-panels';
 
 import { Group, Stack, Text } from '@mantine/core';
 import { useAtomValue } from 'jotai';
@@ -28,7 +28,7 @@ const CopyButton = () => {
 };
 
 interface RawTextEditorPanelProps {
-  panelRef: RefObject<ImperativePanelHandle | null>;
+  panelRef: RefObject<PanelImperativeHandle | null>;
   onResizeHandler: () => void;
 }
 
@@ -39,13 +39,13 @@ export const RawTextEditorPanel = ({
   return (
     <Panel
       id="data-panel"
-      order={1}
-      defaultSize={50}
-      collapsedSize={0}
-      minSize={10}
+      defaultSize="50"
+      collapsedSize="0"
+      minSize="10"
       collapsible={true}
-      ref={panelRef}
+      panelRef={panelRef}
       onResize={onResizeHandler}
+      style={{ overflow: 'hidden' }}
     >
       <Stack gap={0} h="100%">
         <Group px={10} py={8} justify="space-between">

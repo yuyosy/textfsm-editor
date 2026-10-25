@@ -1,5 +1,5 @@
 import { type RefObject, useMemo } from 'react';
-import { type ImperativePanelHandle, Panel } from 'react-resizable-panels';
+import { Panel, type PanelImperativeHandle } from 'react-resizable-panels';
 
 import { CodeHighlight } from '@mantine/code-highlight';
 import { Box, Group, ScrollArea, Stack, Tabs, Text } from '@mantine/core';
@@ -15,7 +15,7 @@ import { useDataDeliver } from '@/hooks/useDataDeliver';
 import { getCurrentDateTimeString } from '@/utils/datetime';
 
 interface ResultViewPanelProps {
-  panelRef: RefObject<ImperativePanelHandle | null>;
+  panelRef: RefObject<PanelImperativeHandle | null>;
   onResizeHandler: () => void;
 }
 export const ResultViewPanel = ({
@@ -40,7 +40,7 @@ export const ResultViewPanel = ({
           key,
           Array.isArray(val) ? val.join(', ') : val,
         ]);
-        entries.push(['$index', index]);
+        entries.push(['$index', String(index)]);
         return Object.fromEntries(entries);
       }),
     [results],
@@ -55,13 +55,13 @@ export const ResultViewPanel = ({
   return (
     <Panel
       id="result-panel"
-      order={2}
-      defaultSize={50}
-      collapsedSize={0}
-      minSize={10}
+      defaultSize="50"
+      collapsedSize="0"
+      minSize="10"
       collapsible={true}
-      ref={panelRef}
+      panelRef={panelRef}
       onResize={onResizeHandler}
+      style={{ overflow: 'hidden' }}
     >
       <Tabs
         variant="pills"
