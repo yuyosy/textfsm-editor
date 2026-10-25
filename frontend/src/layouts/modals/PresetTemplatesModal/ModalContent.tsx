@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { Button, Group, Modal, Stack, TextInput } from '@mantine/core';
+import { Button, Group, Modal, Stack, Text, TextInput } from '@mantine/core';
 import Fuse from 'fuse.js';
 
 import { useFetchTemplates } from './hooks/useFetchTemplates';
@@ -16,7 +16,7 @@ export const PresetTemplatesModalContent = ({
   close,
   focusRef,
 }: ModalContentProps) => {
-  const { templates, loading } = useFetchTemplates();
+  const { templates, loading, error, refetch } = useFetchTemplates();
   const { loadTemplate } = useLoadPresetTemplate();
   const [selectedRecords, setSelectedRecords] = useState<
     SearchedTemplateInfo[]
@@ -24,7 +24,8 @@ export const PresetTemplatesModalContent = ({
   const [isAndCondition, setIsAndCondition] = useState(true);
   const [isFuzzyEnabled, setIsFuzzyEnabled] = useState(true);
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<SearchedTemplateInfo | null>(null);
 
   const [searchParams, setSearchParams] = useState<SearchParams>({
     template: '',
@@ -99,12 +100,16 @@ export const PresetTemplatesModalContent = ({
     }
   }, [regexFilteredTemplates, fuzzyFilteredTemplates]);
 
-  const handleSelectTemplate = (template: string) => {
+  const handleSelectTemplate = (template: SearchedTemplateInfo) => {
     setSelectedTemplate(template);
   };
 
-  const handleLoadTemplate = () => {
-    loadTemplate(selectedTemplate);
+  const handleLoadTemplate = async () => {
+    if (selectedTemplate === null) {
+      return;
+    }
+
+    await loadTemplate(selectedTemplate);
     close();
   };
 
@@ -134,9 +139,26 @@ export const PresetTemplatesModalContent = ({
             loading={loading}
             onSelectTemplate={handleSelectTemplate}
           />
+          {error === null ? null : (
+            <Group justify="space-between" align="flex-start" gap="sm">
+              <Text size="sm" c="red">
+                Failed to load preset templates. {error.message}
+              </Text>
+              <Button
+                variant="light"
+                size="xs"
+                onClick={() => {
+                  void refetch();
+                }}
+                loading={loading}
+              >
+                Retry
+              </Button>
+            </Group>
+          )}
           <TextInput
             label="Selected Template"
-            value={selectedTemplate}
+            value={selectedTemplate?.template ?? ''}
             readOnly
           />
         </Stack>
@@ -147,8 +169,10 @@ export const PresetTemplatesModalContent = ({
           <Button
             size="xs"
             color="cyan"
-            onClick={handleLoadTemplate}
-            disabled={!selectedTemplate}
+            onClick={() => {
+              void handleLoadTemplate();
+            }}
+            disabled={selectedTemplate === null}
           >
             Load Template
           </Button>

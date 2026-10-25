@@ -1,30 +1,35 @@
 import { useSetAtom } from 'jotai';
 
-import { api } from '@/features/api';
 import { addNotificationAtom } from '@/features/state/atoms';
 import { templateEditorValueAtom } from '@/features/state/storageAtoms';
+import {
+  type StaticTemplateRepository,
+  staticTemplateRepository,
+} from '@/features/templates/staticTemplateRepository';
 
-export const useLoadPresetTemplate = () => {
+import type { NtcTemplateInfo } from '../types';
+
+export const useLoadPresetTemplate = (
+  repository: StaticTemplateRepository = staticTemplateRepository,
+) => {
   const addNotification = useSetAtom(addNotificationAtom);
   const setEditorContent = useSetAtom(templateEditorValueAtom);
 
-  const loadTemplate = async (templateName: string) => {
+  const loadTemplate = async (template: NtcTemplateInfo) => {
     try {
-      const response = await api.get(`/api/ntc-templates/${templateName}`, {
-        responseType: 'text',
-      });
-      setEditorContent(response);
+      const templateContent = await repository.load(template);
+      setEditorContent(templateContent);
       addNotification({
         type: 'success',
         title: 'Preset template loaded',
-        message: `Loaded: ${templateName}`,
+        message: `Loaded: ${template.template}`,
       });
     } catch (error) {
       console.error('Failed to load template:', error);
       addNotification({
         type: 'error',
         title: 'Failed to load preset template',
-        message: `Failed to load: ${templateName}`,
+        message: `Failed to load: ${template.template}`,
       });
     }
   };

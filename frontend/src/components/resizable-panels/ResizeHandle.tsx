@@ -1,4 +1,4 @@
-import { PanelResizeHandle } from 'react-resizable-panels';
+import { Separator } from 'react-resizable-panels';
 
 import styles from './ResizeHandle.module.css';
 
@@ -12,7 +12,7 @@ export default function ResizeHandle({
   id?: string;
 }) {
   return (
-    <PanelResizeHandle
+    <Separator
       className={[styles.ResizeHandleOuter, className].join(' ')}
       id={id}
     >
@@ -20,6 +20,6 @@ export default function ResizeHandle({
         className={styles.ResizeHandleInner}
         data-collapsed={collapsed || undefined}
       ></div>
-    </PanelResizeHandle>
+    </Separator>
   );
 }

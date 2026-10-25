@@ -1,10 +1,10 @@
 import { useCallback } from 'react';
 
-import type { Result } from '@/features/types';
+import type { TextFsmRecord } from '@/features/textfsm/types';
 
 type DataDeliverParams = {
   header: string[];
-  results: Result[];
+  results: TextFsmRecord[];
 };
 
 export const useDataDeliver = ({ header, results }: DataDeliverParams) => {

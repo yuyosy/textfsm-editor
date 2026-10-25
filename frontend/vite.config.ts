@@ -2,10 +2,10 @@
 
 import { resolve } from 'node:path';
 
-import react from '@vitejs/plugin-react-swc';
+import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv } from 'vite';
 
-import { version } from './package.json';
+import { version } from './package.json' with { type: 'json' };
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -23,10 +23,10 @@ export default defineConfig(({ mode }) => {
     root: 'src',
     plugins: [react()],
     build: {
-      outDir: resolve(__dirname, 'dist'),
+      outDir: resolve(import.meta.dirname, 'dist'),
       emptyOutDir: true,
       sourcemap: true,
-      rollupOptions: {
+      rolldownOptions: {
         output: {
           entryFileNames: 'assets/[name].js',
           chunkFileNames: 'assets/[name].js',
@@ -42,11 +42,11 @@ export default defineConfig(({ mode }) => {
         // Bundling Monaco adds 15MB to the size
         //
         // '@/features/editor/initializeEditor': useBundled
-        //   ? resolve(__dirname, 'src/features/editor/initializeEditorBundledMonaco.ts')
-        //   : resolve(__dirname, 'src/features/editor/initializeEditor.ts'),
+        //   ? resolve(import.meta.dirname, 'src/features/editor/initializeEditorBundledMonaco.ts')
+        //   : resolve(import.meta.dirname, 'src/features/editor/initializeEditor.ts'),
         //
         // <-- Experimental
-        '@/': `${__dirname}/src/`,
+        '@/': `${import.meta.dirname}/src/`,
       },
     },
     define: {

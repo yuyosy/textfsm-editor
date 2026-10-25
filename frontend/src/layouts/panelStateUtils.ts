@@ -1,12 +1,11 @@
 import type { RefObject } from 'react';
-import type { ImperativePanelHandle } from 'react-resizable-panels';
+import type { PanelImperativeHandle } from 'react-resizable-panels';
 import type { DisclosureActions, PanelLayoutType } from './types';
 
 export const setSegmentedControlPanelState = (
   activatePanelName: PanelLayoutType,
   panelImperativeHandleRef: RefObject<{
     isCollapsed: () => boolean;
-    isExpanded: () => boolean;
   } | null>,
   currentPanelLyout: PanelLayoutType,
   setMainPanelLyout: (value: PanelLayoutType) => void,
@@ -19,7 +18,8 @@ export const setSegmentedControlPanelState = (
   }
   if (
     currentPanelLyout === activatePanelName &&
-    panelImperativeHandleRef?.current?.isExpanded()
+    panelImperativeHandleRef.current &&
+    !panelImperativeHandleRef.current.isCollapsed()
   ) {
     setMainPanelLyout('both');
   }
@@ -27,20 +27,20 @@ export const setSegmentedControlPanelState = (
 
 export const setChipPanelState = (
   isOpen: boolean,
-  ref: RefObject<ImperativePanelHandle | null>,
+  ref: RefObject<PanelImperativeHandle | null>,
   actions: DisclosureActions,
 ) => {
   if (isOpen && ref?.current?.isCollapsed()) {
     actions.close();
   }
-  if (!isOpen && ref?.current?.isExpanded()) {
+  if (!isOpen && ref.current && !ref.current.isCollapsed()) {
     actions.open();
   }
 };
 
 export const handlePanelToggle = (
   toExpand: boolean,
-  ref: RefObject<ImperativePanelHandle | null>,
+  ref: RefObject<PanelImperativeHandle | null>,
   actions: DisclosureActions,
 ) => {
   const panel = ref.current;
