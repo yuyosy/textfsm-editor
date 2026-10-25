@@ -111,9 +111,12 @@ export const DropzoneSection = ({
               );
             })}
             {rejectedFiles.map((item, index) => {
-              const errors = item.errors.map((err, index) => {
+              const errors = item.errors.map((err) => {
                 return (
-                  <Text size="sm" key={`errormsg_${item.file.name}_${index}`}>
+                  <Text
+                    size="sm"
+                    key={`errormsg_${item.file.name}_${err.code}_${err.message}`}
+                  >
                     {err.message}
                   </Text>
                 );
