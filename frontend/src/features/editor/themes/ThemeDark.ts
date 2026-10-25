@@ -1,4 +1,4 @@
-import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import type * as monaco from 'monaco-editor';
 export const textfsmThemeDark: monaco.editor.IStandaloneThemeData = {
   base: 'vs-dark',
   inherit: true,

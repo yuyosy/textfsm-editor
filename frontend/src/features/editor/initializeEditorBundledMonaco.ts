@@ -26,7 +26,12 @@ export const initializeTextFSMEditor = () => {
 
     const languageId = 'textfsm';
     if (
-      !monaco.languages.getLanguages().some((lang) => lang.id === languageId)
+      !monaco.languages
+        .getLanguages()
+        .some(
+          (lang: monaco.languages.ILanguageExtensionPoint) =>
+            lang.id === languageId,
+        )
     ) {
       monaco.languages.register({ id: languageId });
       monaco.languages.setLanguageConfiguration(
