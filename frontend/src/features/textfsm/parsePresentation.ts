@@ -1,3 +1,5 @@
+import { TextFsmBackendError } from './backendEngine';
+
 import type { NotificationItemInfo, ResultError, ResultItem } from '@/types';
 import type { TextFsmErrorCode, TextFsmParseResult } from './types';
 
@@ -62,6 +64,9 @@ type EngineLikeError = {
 const getTimestamp = (): string => new Date().toLocaleString();
 
 const createResultError = (error: unknown): ResultError => {
+  if (error instanceof TextFsmBackendError) {
+    return { status: '', reason: error.reason, message: error.message };
+  }
   const engineError =
     typeof error === 'object' && error !== null
       ? (error as EngineLikeError)
