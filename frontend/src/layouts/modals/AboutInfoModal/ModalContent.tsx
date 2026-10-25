@@ -1,8 +1,8 @@
 import { Button, Group, Modal, Stack } from '@mantine/core';
 
 import { AboutSection } from './AboutSection';
-import { ReferencesSection } from './ReferencesSection';
 import { RelatedLinksSection } from './RelatedLinksSection';
+import { ThirdPartyNoticesSection } from './ThirdPartyNoticesSection';
 
 import type { ModalContentProps } from '../types';
 
@@ -22,7 +22,7 @@ export const AboutInfoModalContent = ({
         <Stack ref={focusRef} p={8} gap="md">
           <AboutSection />
           <RelatedLinksSection />
-          <ReferencesSection />
+          <ThirdPartyNoticesSection />
         </Stack>
         <Group justify="space-between" mt="lg">
           <Button variant="default" size="xs" onClick={close}>

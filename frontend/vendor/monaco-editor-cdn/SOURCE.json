@@ -1,0 +1,8 @@
+{
+  "version": "0.55.1",
+  "source": "https://cdn.jsdelivr.net/npm/monaco-editor@0.55.1",
+  "sha256": {
+    "LICENSE": "33e4ff1a06ef62ba21788ea162564ee8165269a24a9ce6ef301837447eab0ac6",
+    "ThirdPartyNotices.txt": "790537262fc78a764e121e6b92b959bcd3f5c310b47d9d9b9e92e17fe0af5336"
+  }
+}
