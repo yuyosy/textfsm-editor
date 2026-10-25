@@ -1,0 +1,13 @@
+{
+  "name": "ntc-templates",
+  "version": "9.3.0",
+  "source": "https://files.pythonhosted.org/packages/63/0f/4f1e745d5871490e86d2ae9839b51486e1389d0c25b0dbbbd3f15853bd81/ntc_templates-9.3.0.tar.gz",
+  "archiveSha256": "2045d20839b5892152637b7c22893923c9a57b6c3e92771fc976f473d0fb05e3",
+  "retrievedAt": "2026-10-25",
+  "allowed_file_types": [
+    ".textfsm",
+    "index"
+  ],
+  "template_count": 979,
+  "aggregate_bytes": 1106694
+}

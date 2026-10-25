@@ -15,7 +15,7 @@ import type { MatchType, SearchedTemplateInfo } from './types';
 interface TemplateTableProps {
   templates: SearchedTemplateInfo[];
   loading: boolean;
-  onSelectTemplate: (template: string) => void;
+  onSelectTemplate: (template: SearchedTemplateInfo) => void;
 }
 
 const badgeStyles: Record<
@@ -40,7 +40,7 @@ export const TemplateTable = ({
       noRecordsText="Select a platform to view templates"
       borderRadius="sm"
       striped
-      idAccessor={(item) => item.template + item.platform + item.command_raw}
+      idAccessor={(item) => item.template + item.platform + item.commandRaw}
       fetching={loading}
       records={templates}
       scrollAreaProps={{ type: 'always', offsetScrollbars: 'y' }}
@@ -52,7 +52,7 @@ export const TemplateTable = ({
             <Stack gap={0}>
               <Text>{record.template}</Text>
               <Text size="xs" c="dimmed" p={4}>
-                {record.command_raw}
+                {record.commandRaw}
               </Text>
               <Group gap={8}>
                 <Badge
@@ -88,7 +88,7 @@ export const TemplateTable = ({
             <Button
               variant="default"
               size="xs"
-              onClick={() => onSelectTemplate(record.template)}
+              onClick={() => onSelectTemplate(record)}
             >
               Select
             </Button>

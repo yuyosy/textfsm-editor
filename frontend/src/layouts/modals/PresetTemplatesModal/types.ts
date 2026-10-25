@@ -1,17 +1,8 @@
+import type { NtcTemplateManifestEntryV1 } from '@/features/templates/manifest';
+
 export type MatchType = 'all' | 'regex' | 'fuzzy';
 
-export interface NtcTemplateInfo {
-  template: string;
-  hostname: string;
-  platform: string;
-  command_raw: string;
-  command_regex: string;
-}
-
-export interface NtcTemplateIndex {
-  version: string;
-  template_list: NtcTemplateInfo[];
-}
+export type NtcTemplateInfo = NtcTemplateManifestEntryV1;
 
 export interface SearchedTemplateInfo extends NtcTemplateInfo {
   matchType: MatchType;

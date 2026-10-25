@@ -19,7 +19,7 @@ export const getRegexFilteredTemplates = (
     return [];
   }
   return Object.values(templates[selectedPlatform] || [])
-    .filter(({ template, command_raw, command_regex }) => {
+    .filter(({ template, commandRaw, commandRegex }) => {
       const conditions: boolean[] = [];
       if (searchParams.template !== '') {
         conditions.push(
@@ -30,10 +30,10 @@ export const getRegexFilteredTemplates = (
       }
       if (searchParams.command !== '') {
         conditions.push(
-          command_raw
+          commandRaw
             .toLowerCase()
             .includes(searchParams.command.trim().toLowerCase()) ||
-            regexTest(command_regex, searchParams.command),
+            regexTest(commandRegex, searchParams.command),
         );
       }
 
@@ -63,7 +63,7 @@ export const getFuzzyFilteredTemplates = (
         !regexFilteredTemplates.some(
           (regexItem) =>
             regexItem.template === item.template &&
-            regexItem.command_raw === item.command_raw,
+            regexItem.commandRaw === item.commandRaw,
         ),
     )
     .map((item) => ({ ...item, matchType: 'fuzzy' }));
