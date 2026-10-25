@@ -1,5 +1,28 @@
 # Frontend
 
+## Processing modes
+
+Use **Processing mode** in the toolbar to select:
+
+- **Browser only** (default): parses locally with TxtFSM in a Web Worker.
+  Inputs are not sent to the backend. This is a compatible implementation;
+  some templates may fail or produce different results from Python TextFSM.
+- **Backend request**: sends the input and template to the existing Python
+  TextFSM backend using `POST /api/parse`. It requires a running backend;
+  connection and parse errors are displayed without switching implementations.
+
+The help button explains both modes. The selection is saved in local storage
+and applies to both Send and AutoParse. Switching modes cancels pending work
+and clears the previous result. AutoParse reruns with the selected mode.
+Cancellation stops waiting for an HTTP response; work already running on the
+backend may continue there.
+
+The API origin uses the existing `VITE_API_ENTRYPOINT_DEV` (default
+`http://localhost:8000`) or `VITE_API_ENTRYPOINT_PROD` (default same origin).
+The frontend adds `/api/parse`; configure the origin without that suffix.
+For a separate backend origin, allow the frontend origin in the backend's
+`CORS_ALLOWED_ORIGINS`. Restart Vite or rebuild after changing environment values.
+
 ## Updating ntc-templates
 
 Run from `frontend` with Node.js 22 or later:

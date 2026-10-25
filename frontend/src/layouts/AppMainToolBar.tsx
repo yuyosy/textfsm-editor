@@ -6,6 +6,7 @@ import { addNotificationAtom } from '@/features/state/atoms';
 import { autoRequestEnabledAtom } from '@/features/state/storageAtoms';
 import { useSendRequest } from '@/hooks/useSendRequest';
 import { PanelSelector } from './PanelSelector';
+import { ParserModeSelect } from './ParserModeSelect';
 import { handlePanelToggle } from './panelStateUtils';
 
 import type { Dispatch, SetStateAction } from 'react';
@@ -100,6 +101,7 @@ export const AppMainToolBar = ({
         />
       </Group>
       <Group>
+        <ParserModeSelect />
         {/* Actions */}
         <Button
           size="xs"

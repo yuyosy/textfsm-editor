@@ -1,13 +1,27 @@
+import { atom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 
 import { localStorage, sessionStorage } from './syncStorage';
 
+import type { TextFsmParserMode } from '@/features/textfsm/types';
 import type {
   PlatformPriority,
   TemplateInfo,
   TemplateTag,
 } from '@/layouts/modals/types';
 import type { HistoryAutoSaveItem } from '@/types';
+
+const storedParserModeAtom = atomWithStorage<TextFsmParserMode>(
+  'options-parser-mode',
+  'local',
+  localStorage(),
+  { getOnInit: true },
+);
+export const parserModeAtom = atom(
+  (get): TextFsmParserMode =>
+    get(storedParserModeAtom) === 'backend' ? 'backend' : 'local',
+  (_get, set, mode: TextFsmParserMode) => set(storedParserModeAtom, mode),
+);
 
 export const savedTemplateListAtom = atomWithStorage<TemplateInfo[]>(
   'editor-template-list',

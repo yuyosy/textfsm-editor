@@ -1,4 +1,5 @@
 export type TextFsmCellValue = string | string[];
+export type TextFsmParserMode = 'local' | 'backend';
 export type TextFsmRecord = Record<string, TextFsmCellValue>;
 
 export interface TextFsmParseInput {
