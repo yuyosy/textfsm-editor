@@ -1,4 +1,4 @@
-import type { TextFSMParseAPIResponse } from '@/features/types';
+import type { TextFsmRecord } from '@/features/textfsm/types';
 import type { StatusBadgeVariant } from './components/StatusBadge';
 
 export interface ResponseResult {
@@ -17,11 +17,29 @@ export interface ResultObject {
   result_message_detail: string;
 }
 
+export interface ResultData {
+  message: string;
+  header: string[];
+  results: TextFsmRecord[];
+}
+
+export interface ResultError {
+  status: string;
+  reason: string;
+  message: string;
+}
+
 interface Timestamp {
   timestamp: string;
 }
 
-export interface ResultItem extends TextFSMParseAPIResponse, Timestamp {}
+export interface ResultItem extends Timestamp {
+  ok: boolean;
+  status: string;
+  code: number;
+  data: ResultData | undefined;
+  errors: ResultError[] | undefined;
+}
 
 export interface HistoryAutoSaveItem {
   timestamp: string;

@@ -3,10 +3,6 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useAtomCallback } from 'jotai/utils';
 
-import {
-  createErrorResultItem,
-  sendTextFSMParseRequest,
-} from '@/features/request/sendTextFSMParseRequest';
 import { historyAutoSaveHandler } from '@/features/state/actionAtoms';
 import { responseStateAtom, resultViewValueAtom } from '@/features/state/atoms';
 import {
@@ -15,10 +11,18 @@ import {
   rawTextEditorValueAtom,
   templateEditorValueAtom,
 } from '@/features/state/storageAtoms';
+import { textFsmParseRunner } from '@/features/textfsm/parseRunner';
 
+import type { TextFsmParseRunner } from '@/features/textfsm/parseRunner';
 import type { NotificationItemInfo } from '@/types';
 
-export const useSendRequest = () => {
+interface UseSendRequestOptions {
+  parseRunner?: TextFsmParseRunner;
+}
+
+export const useSendRequest = ({
+  parseRunner = textFsmParseRunner,
+}: UseSendRequestOptions = {}) => {
   const readRawText = useAtomCallback(
     useCallback((get) => {
       return get(rawTextEditorValueAtom);
@@ -29,83 +33,52 @@ export const useSendRequest = () => {
       return get(templateEditorValueAtom);
     }, []),
   );
-  const readParseRequestDelay = useAtomCallback(
-    useCallback((get) => {
-      return get(parseRequestDelayAtom);
-    }, []),
-  );
-
   const setResponseState = useSetAtom(responseStateAtom);
   const setResultViewValue = useSetAtom(resultViewValueAtom);
   const autoSaveHandler = useSetAtom(historyAutoSaveHandler);
+  const ownerIdRef = useRef<string>(crypto.randomUUID());
 
-  const sendRequest = async (immediate = false) => {
+  useEffect(() => {
+    return () => {
+      parseRunner.abortOwner(ownerIdRef.current);
+    };
+  }, [parseRunner]);
+
+  const sendRequest = async (_immediate = false) => {
     const template = readTemplate();
     if (template === '') {
       return { response: null, notification: null };
     }
-    let notification: NotificationItemInfo | null = null;
-    try {
-      const response = await sendTextFSMParseRequest(
-        readRawText(),
-        template,
-        immediate ? 0 : readParseRequestDelay(),
-      );
-      setResponseState(response.ok ? 'success' : 'error');
-      setResultViewValue(response);
+    const data = readRawText();
+    const result = await parseRunner.parse(ownerIdRef.current, {
+      dataString: data,
+      templateString: template,
+    });
 
-      if (response.ok && response.data) {
-        const recordCount = response.data.results.length;
-        const message =
-          recordCount === 0
-            ? 'There are no records.'
-            : recordCount === 1
-              ? 'There is 1 record.'
-              : `There are ${recordCount} records.`;
-        notification = {
-          type: 'api',
-          title: response.data.message,
-          message: message,
-          metadata: { recordCount, results: response.data.results },
-        };
-        autoSaveHandler({
-          template: template,
-          data: readRawText(),
-          result: JSON.stringify(response.data.results, null, 2),
-          status: 'success',
-        });
-      } else if (!response.ok && response.errors) {
-        notification = {
-          type: 'error',
-          title: response.errors[0].reason,
-          message: response.errors[0].message,
-          metadata: { errors: response.errors },
-        };
-        autoSaveHandler({
-          template: template,
-          data: readRawText(),
-          result: '',
-          status: 'error',
-        });
-      }
-      return { response, notification };
-    } catch (error) {
-      const errorResult = createErrorResultItem(error);
-      setResponseState('error');
-      setResultViewValue(errorResult);
-      const errorReason =
-        error instanceof Error ? error.constructor.name : 'UnknownError';
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      notification = {
-        type: 'error',
-        title: errorReason,
-        message: errorMessage,
-        metadata: { error: error instanceof Error ? error : String(error) },
-      };
-      console.error(error);
-      return { response: errorResult, notification };
+    if (result.response === null) {
+      return result;
     }
+
+    setResponseState(result.response.ok ? 'success' : 'error');
+    setResultViewValue(result.response);
+
+    if (result.response.ok && result.response.data) {
+      autoSaveHandler({
+        template,
+        data,
+        result: JSON.stringify(result.response.data.results, null, 2),
+        status: 'success',
+      });
+    } else if (!result.response.ok && result.response.errors) {
+      autoSaveHandler({
+        template,
+        data,
+        result: '',
+        status: 'error',
+      });
+    }
+
+    return result;
   };
 
   return sendRequest;
@@ -113,11 +86,12 @@ export const useSendRequest = () => {
 
 export const useAutoRequest = (
   onNotification?: (notification: NotificationItemInfo) => void,
+  { parseRunner = textFsmParseRunner }: UseSendRequestOptions = {},
 ) => {
   useAtomValue(rawTextEditorValueAtom);
   useAtomValue(templateEditorValueAtom);
-  const sendRequest = useSendRequest();
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const sendRequest = useSendRequest({ parseRunner });
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastValuesRef = useRef({ rawText: '', template: '' });
 
   const processAutoRequest = useAtomCallback(
@@ -139,6 +113,7 @@ export const useAutoRequest = (
           return;
         }
 
+        parseRunner.invalidateActive();
         lastValuesRef.current = currentValues;
 
         if (currentValues.template === '') {
@@ -157,7 +132,7 @@ export const useAutoRequest = (
           timeoutRef.current = null;
         }, get(parseRequestDelayAtom));
       },
-      [sendRequest, onNotification],
+      [parseRunner, sendRequest, onNotification],
     ),
   );
 
