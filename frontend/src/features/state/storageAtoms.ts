@@ -89,7 +89,14 @@ export const savedPresetSearchInputsAtom =
 
 export const rawTextEditorValueAtom = atomWithStorage<string>(
   'data-editor-value',
-  '// Type your data here',
+  [
+    '# Replace this sample with the text you want to parse.',
+    '',
+    'NAME    STATUS',
+    'alpha   ready',
+    'beta    pending',
+    'gamma   ready',
+  ].join('\n'),
   sessionStorage(),
   {
     getOnInit: true,
@@ -98,7 +105,17 @@ export const rawTextEditorValueAtom = atomWithStorage<string>(
 
 export const templateEditorValueAtom = atomWithStorage<string>(
   'template-editor-value',
-  '# Type your template here',
+  [
+    '# Click Send to parse the sample in Data.',
+    '# Edit the Value patterns and Start rules to match your own text.',
+    '#',
+    'Value NAME (\\S+)',
+    'Value STATUS (ready|pending)',
+    '',
+    'Start',
+    '  ^${NAME}\\s+${STATUS}$$ -> Record',
+    '',
+  ].join('\n'),
   sessionStorage(),
   {
     getOnInit: true,

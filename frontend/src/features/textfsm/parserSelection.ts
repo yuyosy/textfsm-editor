@@ -11,7 +11,7 @@ import type {
 export { primaryMode };
 
 const primaryEngine: TextFsmEngine = createPrimaryEngine();
-const primaryRunner = createTextFsmParseRunner(primaryEngine);
+const primaryRunner = createTextFsmParseRunner(primaryEngine, primaryMode);
 let preloadController: AbortController | undefined;
 
 export const preloadPrimaryParser = (
