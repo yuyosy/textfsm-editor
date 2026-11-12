@@ -7,7 +7,7 @@ import type { WorkerRequest, WorkerResponse } from './protocol';
 const PACKAGE_ERROR_MESSAGE = 'The TextFSM package could not parse the input.';
 
 export const handleTextFsmWorkerRequest = (
-  request: WorkerRequest,
+  request: Extract<WorkerRequest, { type: 'parse' }>,
 ): WorkerResponse => {
   try {
     validateParseInput(request.input);

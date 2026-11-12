@@ -30,6 +30,13 @@ export const parserModeAtom = atom(
   (_get, set, mode: TextFsmParserMode) => set(storedParserModeAtom, mode),
 );
 
+export const pyodidePreloadEnabledAtom = atomWithStorage<boolean>(
+  'options-pyodide-preload-enabled',
+  false,
+  localStorage(),
+  { getOnInit: true },
+);
+
 export const savedTemplateListAtom = atomWithStorage<TemplateInfo[]>(
   'editor-template-list',
   [],

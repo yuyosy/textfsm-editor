@@ -6,7 +6,17 @@ import type {
   TextFsmParseOptions,
   TextFsmParseResult,
 } from '../types';
-import type { WorkerFactory, WorkerLike, WorkerResponse } from './protocol';
+import type {
+  WorkerFactory,
+  WorkerLike,
+  WorkerOperation,
+  WorkerResponse,
+} from './protocol';
+
+type CompletedResponse = Extract<
+  WorkerResponse,
+  { type: 'success' | 'initialized' }
+>;
 
 type ActiveRequest = {
   abortListener: (() => void) | undefined;
@@ -14,7 +24,7 @@ type ActiveRequest = {
   initializing: boolean;
   onInitializationChange: TextFsmParseOptions['onInitializationChange'];
   reject: (reason: Error) => void;
-  resolve: (result: TextFsmParseResult) => void;
+  resolve: (response: CompletedResponse) => void;
   signal: AbortSignal | undefined;
   timeout: ReturnType<typeof setTimeout> | undefined;
   parseTimeoutMs: number;
@@ -32,6 +42,7 @@ export const createWorkerTextFsmEngine = (
   let disposed = false;
   let worker: WorkerLike | undefined;
   let workerReady = false;
+  let preloading: Promise<void> | undefined;
 
   const clearRequestResources = (request: ActiveRequest): void => {
     clearTimeout(request.timeout);
@@ -42,7 +53,7 @@ export const createWorkerTextFsmEngine = (
 
   const settle = (
     request: ActiveRequest,
-    outcome: { result: TextFsmParseResult } | { error: Error },
+    outcome: { response: CompletedResponse } | { error: Error },
     shouldRetireWorker: boolean,
   ): void => {
     if (active !== request) {
@@ -59,8 +70,8 @@ export const createWorkerTextFsmEngine = (
       request.onInitializationChange?.(interrupted ? 'interrupted' : 'failed');
     }
 
-    if ('result' in outcome) {
-      request.resolve(outcome.result);
+    if ('response' in outcome) {
+      request.resolve(outcome.response);
     } else {
       request.reject(outcome.error);
     }
@@ -99,13 +110,17 @@ export const createWorkerTextFsmEngine = (
       return;
     }
 
-    if (response.type === 'started') {
+    if (response.type === 'started' || response.type === 'initialized') {
       if (request.initializing) {
         workerReady = true;
         request.initializing = false;
         request.onInitializationChange?.('ready');
       }
-      startParseTimer(request);
+      if (response.type === 'initialized') {
+        settle(request, { response }, false);
+      } else {
+        startParseTimer(request);
+      }
       return;
     }
     if (response.type === 'loading-package') {
@@ -113,7 +128,7 @@ export const createWorkerTextFsmEngine = (
       return;
     }
     if (response.type === 'success') {
-      settle(request, { result: response.result }, false);
+      settle(request, { response }, false);
       return;
     }
 
@@ -180,10 +195,10 @@ export const createWorkerTextFsmEngine = (
     return worker;
   };
 
-  const parse = (
-    input: Parameters<TextFsmEngine['parse']>[0],
-    options: TextFsmParseOptions = {},
-  ): Promise<TextFsmParseResult> => {
+  const run = (
+    operation: WorkerOperation,
+    options: TextFsmParseOptions,
+  ): Promise<CompletedResponse> => {
     if (disposed) {
       return Promise.reject(
         new TextFsmEngineError(
@@ -193,10 +208,8 @@ export const createWorkerTextFsmEngine = (
       );
     }
 
-    try {
-      validateParseInput(input);
-    } catch (error) {
-      return Promise.reject(error);
+    if (options.signal?.aborted) {
+      return Promise.reject(new TextFsmEngineError('ABORTED', ABORTED_MESSAGE));
     }
 
     if (active !== undefined) {
@@ -219,7 +232,7 @@ export const createWorkerTextFsmEngine = (
       );
     }
 
-    return new Promise<TextFsmParseResult>((resolve, reject) => {
+    return new Promise<CompletedResponse>((resolve, reject) => {
       const request: ActiveRequest = {
         abortListener: undefined,
         id: crypto.randomUUID(),
@@ -267,7 +280,7 @@ export const createWorkerTextFsmEngine = (
 
       try {
         if (initializing) request.onInitializationChange?.('runtime');
-        activeWorker.postMessage({ id: request.id, input, type: 'parse' });
+        activeWorker.postMessage({ ...operation, id: request.id });
       } catch {
         settle(
           request,
@@ -281,6 +294,36 @@ export const createWorkerTextFsmEngine = (
         );
       }
     });
+  };
+
+  const parse = async (
+    input: Parameters<TextFsmEngine['parse']>[0],
+    options: TextFsmParseOptions = {},
+  ): Promise<TextFsmParseResult> => {
+    validateParseInput(input);
+    if (preloading) await preloading;
+    const response = await run({ type: 'parse', input }, options);
+    if (response.type !== 'success') {
+      throw new TextFsmEngineError(
+        'INVALID_RESULT',
+        'Expected a parse result.',
+      );
+    }
+    return response.result;
+  };
+
+  const preload = (options: TextFsmParseOptions = {}): Promise<void> => {
+    if (preloading) return preloading;
+    if (initializationTimeoutMs === undefined || workerReady || active) {
+      return Promise.resolve();
+    }
+
+    preloading = run({ type: 'initialize' }, options)
+      .then(() => undefined)
+      .finally(() => {
+        preloading = undefined;
+      });
+    return preloading;
   };
 
   const dispose = (): void => {
@@ -299,5 +342,5 @@ export const createWorkerTextFsmEngine = (
     retireWorker();
   };
 
-  return { dispose, parse };
+  return { dispose, parse, preload };
 };

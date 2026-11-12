@@ -61,7 +61,8 @@ function fail(id: string, code: TextFsmErrorCode, message = ''): void {
   send({ id, type: 'failure', error: { code, message } });
 }
 
-async function parseRequest({ id, input }: WorkerRequest): Promise<void> {
+async function handleRequest(request: WorkerRequest): Promise<void> {
+  const { id } = request;
   let parse: PythonParser;
   try {
     parserPromise ??= initialize(id);
@@ -71,6 +72,12 @@ async function parseRequest({ id, input }: WorkerRequest): Promise<void> {
     return;
   }
 
+  if (request.type === 'initialize') {
+    send({ id, type: 'initialized' });
+    return;
+  }
+
+  const { input } = request;
   send({ id, type: 'started' });
   try {
     const json = parse(input.templateString, input.dataString);
@@ -102,5 +109,5 @@ async function parseRequest({ id, input }: WorkerRequest): Promise<void> {
 }
 
 self.onmessage = (event: MessageEvent<WorkerRequest>): void => {
-  void parseRequest(event.data);
+  void handleRequest(event.data);
 };
