@@ -114,6 +114,13 @@ export const historyAutoSaveEnabledAtom = atomWithStorage<boolean>(
   { getOnInit: true },
 );
 
+export const historyAutoSaveExcludeErrorsAtom = atomWithStorage<boolean>(
+  'options-history-auto-save-exclude-errors',
+  false,
+  localStorage(),
+  { getOnInit: true },
+);
+
 export const historyAutoSaveCountAtom = atomWithStorage<number>(
   'options-history-auto-save-count',
   5,
