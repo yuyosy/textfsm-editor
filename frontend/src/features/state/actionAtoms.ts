@@ -16,6 +16,7 @@ import {
 import {
   historyAutoSaveCountAtom,
   historyAutoSaveEnabledAtom,
+  historyAutoSaveExcludeErrorsAtom,
   historyAutoSaveItemsAtom,
   parserModeAtom,
 } from './storageAtoms';
@@ -123,7 +124,10 @@ export const clearHistoryAutoSaveItemAtom = atom(null, (_, set) => {
 export const historyAutoSaveHandler = atom(
   null,
   (get, set, item: HistoryAutoSaveItemInfo) => {
-    if (!get(historyAutoSaveEnabledAtom)) {
+    if (
+      !get(historyAutoSaveEnabledAtom) ||
+      (item.status === 'error' && get(historyAutoSaveExcludeErrorsAtom))
+    ) {
       return;
     }
 
