@@ -12,6 +12,7 @@ export type WorkerRequest = {
 
 export type WorkerResponse =
   | { id: string; type: 'started' }
+  | { id: string; type: 'loading-package' }
   | { id: string; type: 'success'; result: TextFsmParseResult }
   | {
       id: string;

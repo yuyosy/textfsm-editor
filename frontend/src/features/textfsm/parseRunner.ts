@@ -4,9 +4,14 @@ import {
   createNotificationForResultItem,
   createSuccessfulResultItem,
 } from './parsePresentation';
+import { TextFsmEngineError } from './types';
 
 import type { NotificationItemInfo, ResultItem } from '@/types';
-import type { TextFsmEngine, TextFsmParseInput } from './types';
+import type {
+  TextFsmEngine,
+  TextFsmParseInput,
+  TextFsmParseOptions,
+} from './types';
 
 export interface ParseRunnerResult {
   response: ResultItem | null;
@@ -27,7 +32,11 @@ const EMPTY_RESULT: ParseRunnerResult = {
 export interface TextFsmParseRunner {
   abortOwner(ownerId: string): void;
   invalidateActive(): void;
-  parse(ownerId: string, input: TextFsmParseInput): Promise<ParseRunnerResult>;
+  parse(
+    ownerId: string,
+    input: TextFsmParseInput,
+    onInitializationChange?: TextFsmParseOptions['onInitializationChange'],
+  ): Promise<ParseRunnerResult>;
 }
 
 export const createTextFsmParseRunner = (
@@ -56,7 +65,7 @@ export const createTextFsmParseRunner = (
     invalidateActive() {
       abortActive();
     },
-    async parse(ownerId, input) {
+    async parse(ownerId, input, onInitializationChange) {
       abortActive();
 
       const controller = new AbortController();
@@ -68,7 +77,10 @@ export const createTextFsmParseRunner = (
       };
 
       try {
-        const result = await engine.parse(input, { signal: controller.signal });
+        const result = await engine.parse(input, {
+          onInitializationChange,
+          signal: controller.signal,
+        });
         if (!isActiveRequest(requestId)) {
           return EMPTY_RESULT;
         }
@@ -86,8 +98,14 @@ export const createTextFsmParseRunner = (
 
         active = undefined;
         const response = createFailedResultItem(error);
+        const reportedInitializationFailure =
+          onInitializationChange !== undefined &&
+          error instanceof TextFsmEngineError &&
+          error.code === 'PYODIDE_INIT';
         return {
-          notification: createNotificationForResultItem(response),
+          notification: reportedInitializationFailure
+            ? null
+            : createNotificationForResultItem(response),
           response,
         };
       }

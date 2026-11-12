@@ -58,7 +58,15 @@ export class TextFsmParseError extends Error {
   }
 }
 
+export type ParserInitializationPhase =
+  | 'runtime'
+  | 'package'
+  | 'ready'
+  | 'failed'
+  | 'interrupted';
+
 export interface TextFsmParseOptions {
+  onInitializationChange?: (phase: ParserInitializationPhase) => void;
   signal?: AbortSignal;
   timeoutMs?: number;
 }
