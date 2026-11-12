@@ -1,6 +1,7 @@
 import { atom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 
+import { primaryMode } from '@/features/textfsm/parserSelection';
 import { localStorage, sessionStorage } from './syncStorage';
 
 import type { TextFsmParserMode } from '@/features/textfsm/types';
@@ -11,15 +12,20 @@ import type {
 } from '@/layouts/modals/types';
 import type { HistoryAutoSaveItem } from '@/types';
 
+const defaultParserMode = primaryMode === 'pyodide' ? 'pyodide' : 'local';
 const storedParserModeAtom = atomWithStorage<TextFsmParserMode>(
-  'options-parser-mode',
-  'local',
+  primaryMode === 'pyodide'
+    ? 'options-parser-mode-pyodide'
+    : 'options-parser-mode',
+  defaultParserMode,
   localStorage(),
   { getOnInit: true },
 );
 export const parserModeAtom = atom(
-  (get): TextFsmParserMode =>
-    get(storedParserModeAtom) === 'backend' ? 'backend' : 'local',
+  (get): TextFsmParserMode => {
+    const mode = get(storedParserModeAtom);
+    return mode === 'local' || mode === primaryMode ? mode : defaultParserMode;
+  },
   (_get, set, mode: TextFsmParserMode) => set(storedParserModeAtom, mode),
 );
 

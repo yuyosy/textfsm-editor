@@ -6,7 +6,10 @@ import { CircleHelp } from 'lucide-react';
 
 import { responseStateAtom, resultViewValueAtom } from '@/features/state/atoms';
 import { parserModeAtom } from '@/features/state/storageAtoms';
-import { cancelParsing } from '@/features/textfsm/parserSelection';
+import { cancelParsing, primaryMode } from '@/features/textfsm/parserSelection';
+
+const isPyodide = primaryMode === 'pyodide';
+const primaryLabel = isPyodide ? 'Pyodide' : 'Backend';
 
 export const ParserModeSelect = () => {
   const [mode, setMode] = useAtom(parserModeAtom);
@@ -42,19 +45,20 @@ export const ParserModeSelect = () => {
           <Stack gap="sm">
             <Text size="sm">
               <Text span fw={600}>
-                Browser only:{' '}
+                {primaryLabel}:{' '}
               </Text>
-              Runs entirely in your browser using TxtFSM, a compatible
-              implementation. Your input and template are not sent to the
-              backend. Some templates may fail to parse or produce different
-              results from the original implementation.
+              {isPyodide
+                ? 'Runs Python TextFSM in your browser. The first download can take a while.'
+                : 'Runs Python TextFSM on the server. Your input and template are sent to the backend.'}
             </Text>
             <Text size="sm">
               <Text span fw={600}>
-                Backend request:{' '}
+                JS compatibility:{' '}
               </Text>
-              Uses the original Python TextFSM implementation. Your input and
-              template are sent to the backend for parsing.
+              {isPyodide
+                ? 'Use this lightweight browser parser if Pyodide is slow to load or cannot start.'
+                : 'Runs a lightweight browser parser without sending your input or template to the server.'}{' '}
+              Some templates may produce different results from Python TextFSM.
             </Text>
           </Stack>
         </Popover.Dropdown>
@@ -72,11 +76,11 @@ export const ParserModeSelect = () => {
         }}
         onDropdownClose={() => setDropdownOpened(false)}
         data={[
-          { value: 'local', label: 'Browser only' },
-          { value: 'backend', label: 'Backend request' },
+          { value: primaryMode, label: primaryLabel },
+          { value: 'local', label: 'JS compatibility' },
         ]}
         onChange={(value) => {
-          if ((value !== 'local' && value !== 'backend') || value === mode)
+          if ((value !== 'local' && value !== primaryMode) || value === mode)
             return;
           cancelParsing();
           setResponseState('init');

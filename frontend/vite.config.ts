@@ -5,12 +5,13 @@ import { resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv } from 'vite';
 
-import { version } from './package.json' with { type: 'json' };
+import packageJson from './package.json' with { type: 'json' };
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ command, mode }) => {
   // https://vite.dev/config/#using-environment-variables-in-config
   const env = loadEnv(mode, process.cwd());
+  const usePyodide = mode === 'pyodide';
 
   // Experimental -->
   //
@@ -21,9 +22,11 @@ export default defineConfig(({ mode }) => {
 
   return {
     root: 'src',
+    base: usePyodide ? './' : '/',
     plugins: [react()],
+    worker: { format: usePyodide ? 'es' : 'iife' },
     build: {
-      outDir: resolve(import.meta.dirname, 'dist'),
+      outDir: resolve(import.meta.dirname, usePyodide ? 'dist-pyodide' : 'dist'),
       emptyOutDir: true,
       sourcemap: true,
       rolldownOptions: {
@@ -36,6 +39,11 @@ export default defineConfig(({ mode }) => {
     },
     resolve: {
       alias: {
+        '@primary-parser': resolve(
+          import.meta.dirname,
+          'src/features/textfsm',
+          usePyodide ? 'primaryPyodide.ts' : 'primaryBackend.ts',
+        ),
         // Experimental -->
         //
         // Dynamically set alias for the Monaco initialization module
@@ -50,9 +58,9 @@ export default defineConfig(({ mode }) => {
       },
     },
     define: {
-      __APP_VERSION__: JSON.stringify(version),
+      __APP_VERSION__: JSON.stringify(packageJson.version),
       __API_ENTRYPOINT__: JSON.stringify(
-        mode === 'production'
+        command === 'build'
           ? env.VITE_API_ENTRYPOINT_PROD || ''
           : env.VITE_API_ENTRYPOINT_DEV || 'http://localhost:8000',
       ),

@@ -11,11 +11,12 @@ export type WorkerRequest = {
 };
 
 export type WorkerResponse =
+  | { id: string; type: 'started' }
   | { id: string; type: 'success'; result: TextFsmParseResult }
   | {
       id: string;
       type: 'failure';
-      error: { code: TextFsmErrorCode; message: string };
+      error: { code: TextFsmErrorCode; message: string; reason?: string };
     };
 
 export interface WorkerLike {

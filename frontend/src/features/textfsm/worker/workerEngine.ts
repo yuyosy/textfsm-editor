@@ -1,5 +1,5 @@
 import { TEXTFSM_LIMITS, validateParseInput } from '../limits';
-import { TextFsmEngineError } from '../types';
+import { TextFsmEngineError, TextFsmParseError } from '../types';
 
 import type {
   TextFsmEngine,
@@ -11,10 +11,11 @@ import type { WorkerFactory, WorkerLike, WorkerResponse } from './protocol';
 type ActiveRequest = {
   abortListener: (() => void) | undefined;
   id: string;
-  reject: (reason: TextFsmEngineError) => void;
+  reject: (reason: Error) => void;
   resolve: (result: TextFsmParseResult) => void;
   signal: AbortSignal | undefined;
-  timeout: ReturnType<typeof setTimeout>;
+  timeout: ReturnType<typeof setTimeout> | undefined;
+  parseTimeoutMs: number;
 };
 
 const ABORTED_MESSAGE = 'TextFSM parsing was aborted.';
@@ -23,6 +24,7 @@ const WORKER_ERROR_MESSAGE =
 
 export const createWorkerTextFsmEngine = (
   workerFactory: WorkerFactory,
+  { initializationTimeoutMs }: { initializationTimeoutMs?: number } = {},
 ): TextFsmEngine => {
   let active: ActiveRequest | undefined;
   let disposed = false;
@@ -37,8 +39,8 @@ export const createWorkerTextFsmEngine = (
 
   const settle = (
     request: ActiveRequest,
-    outcome: { result: TextFsmParseResult } | { error: TextFsmEngineError },
-    shouldReplaceWorker: boolean,
+    outcome: { result: TextFsmParseResult } | { error: Error },
+    shouldRetireWorker: boolean,
   ): void => {
     if (active !== request) {
       return;
@@ -53,9 +55,25 @@ export const createWorkerTextFsmEngine = (
       request.reject(outcome.error);
     }
 
-    if (shouldReplaceWorker) {
-      replaceWorker();
+    if (shouldRetireWorker) {
+      retireWorker();
     }
+  };
+
+  const startParseTimer = (request: ActiveRequest): void => {
+    clearTimeout(request.timeout);
+    request.timeout = setTimeout(() => {
+      settle(
+        request,
+        {
+          error: new TextFsmEngineError(
+            'TIMED_OUT',
+            'TextFSM parsing timed out.',
+          ),
+        },
+        true,
+      );
+    }, request.parseTimeoutMs);
   };
 
   const handleMessage = (
@@ -71,6 +89,10 @@ export const createWorkerTextFsmEngine = (
       return;
     }
 
+    if (response.type === 'started') {
+      startParseTimer(request);
+      return;
+    }
     if (response.type === 'success') {
       settle(request, { result: response.result }, false);
       return;
@@ -79,12 +101,11 @@ export const createWorkerTextFsmEngine = (
     settle(
       request,
       {
-        error: new TextFsmEngineError(
-          response.error.code,
-          response.error.message,
-        ),
+        error: response.error.reason
+          ? new TextFsmParseError(response.error.reason, response.error.message)
+          : new TextFsmEngineError(response.error.code, response.error.message),
       },
-      false,
+      response.error.code === 'PYODIDE_INIT',
     );
   };
 
@@ -95,7 +116,7 @@ export const createWorkerTextFsmEngine = (
     }
 
     if (request === undefined) {
-      replaceWorker();
+      retireWorker();
       return;
     }
 
@@ -127,21 +148,12 @@ export const createWorkerTextFsmEngine = (
     retiringWorker?.terminate();
   };
 
-  const replaceWorker = (): void => {
-    retireWorker();
-    if (!disposed) {
-      worker = createWorker();
-    }
-  };
-
   const ensureWorker = (): WorkerLike | undefined => {
     if (worker === undefined) {
       worker = createWorker();
     }
     return worker;
   };
-
-  worker = createWorker();
 
   const parse = (
     input: Parameters<TextFsmEngine['parse']>[0],
@@ -178,26 +190,31 @@ export const createWorkerTextFsmEngine = (
     }
 
     return new Promise<TextFsmParseResult>((resolve, reject) => {
-      const timeoutMs = options.timeoutMs ?? TEXTFSM_LIMITS.timeoutMs;
       const request: ActiveRequest = {
         abortListener: undefined,
         id: crypto.randomUUID(),
         reject,
         resolve,
         signal: options.signal,
-        timeout: setTimeout(() => {
+        timeout: undefined,
+        parseTimeoutMs: options.timeoutMs ?? TEXTFSM_LIMITS.timeoutMs,
+      };
+      if (initializationTimeoutMs === undefined) {
+        startParseTimer(request);
+      } else {
+        request.timeout = setTimeout(() => {
           settle(
             request,
             {
               error: new TextFsmEngineError(
-                'TIMED_OUT',
-                `TextFSM parsing timed out after ${timeoutMs}ms.`,
+                'PYODIDE_INIT',
+                'Pyodide initialization timed out.',
               ),
             },
             true,
           );
-        }, timeoutMs),
-      };
+        }, initializationTimeoutMs);
+      }
 
       request.abortListener = () => {
         settle(

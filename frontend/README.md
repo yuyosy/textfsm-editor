@@ -1,18 +1,33 @@
 # Frontend
 
-## Processing modes
+## Builds and processing modes
 
-Use **Processing mode** in the toolbar to select:
+Run `npm ci` from `frontend`, then choose a build:
 
-- **Browser only** (default): parses locally with TxtFSM in a Web Worker.
-  Inputs are not sent to the backend. This is a compatible implementation;
-  some templates may fail or produce different results from Python TextFSM.
-- **Backend request**: sends the input and template to the existing Python
-  TextFSM backend using `POST /api/parse`. It requires a running backend;
-  connection and parse errors are displayed without switching implementations.
+| Command | Output | Processing modes |
+| --- | --- | --- |
+| `npm run build:backend` | `dist/` | Backend, JS compatibility |
+| `npm run build:pyodide` | `dist-pyodide/` | Pyodide, JS compatibility |
 
-The help button explains both modes. The selection is saved in local storage
-and applies to both Send and AutoParse. Switching modes cancels pending work
+`npm run build` builds the Backend edition. Use `npm run build:deploy` to copy
+that build to FastAPI. Publish `dist-pyodide/` on a static host, or preview it
+with `npm run preview -- --mode pyodide`. Use HTTPS or localhost.
+Both builds restore the pinned NTC template sources from `SOURCE.json` if
+missing, verify the archive SHA-256, and generate the static template assets.
+
+- **JS compatibility** uses TxtFSM in a Web Worker. Some templates may fail or
+  produce different results from Python TextFSM.
+- **Backend** sends the input and template to Python TextFSM via
+  `POST /api/parse`. Only the Backend build includes the API client.
+- **Pyodide** runs Python TextFSM 2.1.0 in a browser Worker. The first Pyodide
+  parse loads the runtime from jsDelivr and the package from PyPI. If it fails
+  to start, retry or select **JS compatibility** in the toolbar.
+  Both options in the Pyodide build process input and templates locally.
+
+The help button explains the available modes. The selection is saved in local
+storage and applies to both Send and AutoParse. The Backend build starts in
+JS compatibility and the static build starts in Pyodide on first visit.
+Switching modes cancels pending work
 and clears the previous result. AutoParse reruns with the selected mode.
 Cancellation stops waiting for an HTTP response; work already running on the
 backend may continue there.

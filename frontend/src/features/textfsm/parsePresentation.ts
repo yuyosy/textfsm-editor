@@ -25,6 +25,10 @@ const ERROR_MESSAGES: Record<
     message: 'The template could not be parsed.',
     reason: 'Template parse failed',
   },
+  PYODIDE_INIT: {
+    message: 'Try again or select JS compatibility in Processing mode.',
+    reason: 'Pyodide could not start',
+  },
   RESULT_TOO_LARGE: {
     message: 'The parse result is too large to display.',
     reason: 'Result too large',

@@ -1,17 +1,17 @@
-import { envs } from '@/config/env';
-import { createBackendTextFsmEngine } from './backendEngine';
+import { createPrimaryEngine, primaryMode } from '@primary-parser';
+
 import { createTextFsmParseRunner, textFsmParseRunner } from './parseRunner';
 
 import type { TextFsmParserMode } from './types';
 
-const backendRunner = createTextFsmParseRunner(
-  createBackendTextFsmEngine({ apiBaseUrl: envs.API_ENTRYPOINT }),
-);
+export { primaryMode };
+
+const primaryRunner = createTextFsmParseRunner(createPrimaryEngine());
 
 export const getParseRunner = (mode: TextFsmParserMode) =>
-  mode === 'backend' ? backendRunner : textFsmParseRunner;
+  mode === primaryMode ? primaryRunner : textFsmParseRunner;
 
 export const cancelParsing = () => {
   textFsmParseRunner.invalidateActive();
-  backendRunner.invalidateActive();
+  primaryRunner.invalidateActive();
 };
