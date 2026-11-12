@@ -1,6 +1,6 @@
-import { Button, Chip, Divider, Group, Switch, Text } from '@mantine/core';
+import { Button, Divider, Group, Switch, Text } from '@mantine/core';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { Send } from 'lucide-react';
+import { Bell, Send, Table2 } from 'lucide-react';
 
 import { addNotificationAtom } from '@/features/state/atoms';
 import { autoRequestEnabledAtom } from '@/features/state/storageAtoms';
@@ -9,27 +9,35 @@ import { PanelSelector } from './PanelSelector';
 import { ParserModeSelect } from './ParserModeSelect';
 import { handlePanelToggle } from './panelStateUtils';
 
-import type { Dispatch, SetStateAction } from 'react';
+import type { Dispatch, ReactNode, SetStateAction } from 'react';
 import type { DisclosureActions, PanelLayoutType, PanelRefs } from './types';
 
-const PanelToggleChip = ({
-  opened: panel,
+const PanelToggle = ({
+  opened,
   label,
-  handlePanelToggle,
+  panelId,
+  icon,
+  onToggle,
 }: {
   opened: boolean;
   label: string;
-  handlePanelToggle: (checked: boolean) => void;
+  panelId: string;
+  icon: ReactNode;
+  onToggle: (opened: boolean) => void;
 }) => {
   return (
-    <Chip
-      variant="outline"
+    <Button
+      variant={opened ? 'filled' : 'default'}
+      color="blue.8"
       size="xs"
-      checked={panel}
-      onChange={handlePanelToggle}
+      px={8}
+      leftSection={icon}
+      aria-controls={panelId}
+      aria-pressed={opened}
+      onClick={() => onToggle(!opened)}
     >
       {label}
-    </Chip>
+    </Button>
   );
 };
 
@@ -77,28 +85,34 @@ export const AppMainToolBar = ({
           orientation="vertical"
           color="var(--mantine-color-default-border)"
         />
-        <PanelToggleChip
-          opened={openedNotificationPanel}
-          label="NotificationPanel"
-          handlePanelToggle={(checked: boolean) => {
-            handlePanelToggle(
-              checked,
-              panelRefs.notification,
-              notificationPanelActions,
-            );
-          }}
-        />
-        <PanelToggleChip
-          opened={openedResultViewPanel}
-          label="ResultViewPanel"
-          handlePanelToggle={(checked: boolean) => {
-            handlePanelToggle(
-              checked,
-              panelRefs.results,
-              resultViewPanelActions,
-            );
-          }}
-        />
+        <Group gap={4} wrap="nowrap" role="group" aria-label="Panel visibility">
+          <PanelToggle
+            opened={openedNotificationPanel}
+            label="Notifications"
+            panelId="notification-panel"
+            icon={<Bell size={14} aria-hidden="true" />}
+            onToggle={(opened) =>
+              handlePanelToggle(
+                opened,
+                panelRefs.notification,
+                notificationPanelActions,
+              )
+            }
+          />
+          <PanelToggle
+            opened={openedResultViewPanel}
+            label="Results"
+            panelId="result-panel"
+            icon={<Table2 size={14} aria-hidden="true" />}
+            onToggle={(opened) =>
+              handlePanelToggle(
+                opened,
+                panelRefs.results,
+                resultViewPanelActions,
+              )
+            }
+          />
+        </Group>
       </Group>
       <Group>
         <ParserModeSelect />

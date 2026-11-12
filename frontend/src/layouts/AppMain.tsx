@@ -15,8 +15,8 @@ import { addNotificationAtom } from '@/features/state/atoms';
 import { useAutoRequest } from '@/hooks/useSendRequest';
 import { AppMainToolBar } from './AppMainToolBar';
 import {
-  setChipPanelState,
   setSegmentedControlPanelState,
+  syncPanelVisibility,
 } from './panelStateUtils';
 import { NotificationPanel } from './panels/NotificationPanel';
 import { RawTextEditorPanel } from './panels/RawTextEditorPanel';
@@ -63,15 +63,15 @@ export const AppMain = () => {
       setMainPanelLyout,
     );
   };
-  const syncNotificationPanelStateChipOnResize = () => {
-    setChipPanelState(
+  const syncNotificationPanelOnResize = () => {
+    syncPanelVisibility(
       openedNotificationPanel,
       panelRefs.notification,
       notificationPanelActions,
     );
   };
-  const syncResultViewPanelStateChipOnResize = () => {
-    setChipPanelState(
+  const syncResultPanelOnResize = () => {
+    syncPanelVisibility(
       openedResultViewPanel,
       panelRefs.results,
       resultViewPanelActions,
@@ -134,14 +134,14 @@ export const AppMain = () => {
                 <ResizeHandle />
                 <ResultViewPanel
                   panelRef={panelRefs.results}
-                  onResizeHandler={syncResultViewPanelStateChipOnResize}
+                  onResizeHandler={syncResultPanelOnResize}
                 />
               </Group>
             </Panel>
             <ResizeHandle />
             <NotificationPanel
               panelRef={panelRefs.notification}
-              onResizeHandler={syncNotificationPanelStateChipOnResize}
+              onResizeHandler={syncNotificationPanelOnResize}
             />
           </Group>
         </Paper>
