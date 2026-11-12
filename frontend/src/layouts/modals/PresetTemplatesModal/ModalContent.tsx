@@ -2,7 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { Button, Group, Modal, Stack, Text, TextInput } from '@mantine/core';
 import Fuse from 'fuse.js';
+import { useAtom } from 'jotai';
 
+import {
+  emptyPresetSearchInputs,
+  savedPresetSearchInputsAtom,
+} from '@/features/state/storageAtoms';
 import { useFetchTemplates } from './hooks/useFetchTemplates';
 import { useLoadPresetTemplate } from './hooks/useLoadPresetTemplate';
 import { SearchForm } from './SearchForm';
@@ -10,7 +15,11 @@ import { TemplateTable } from './TemplateTable';
 import { getFuzzyFilteredTemplates, getRegexFilteredTemplates } from './utils';
 
 import type { ModalContentProps } from '../types';
-import type { SearchedTemplateInfo, SearchParams } from './types';
+import type {
+  PresetSearchInputs,
+  SearchedTemplateInfo,
+  SearchParams,
+} from './types';
 
 export const PresetTemplatesModalContent = ({
   close,
@@ -23,25 +32,40 @@ export const PresetTemplatesModalContent = ({
   >([]);
   const [isAndCondition, setIsAndCondition] = useState(true);
   const [isFuzzyEnabled, setIsFuzzyEnabled] = useState(true);
-  const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
+  const [savedSearchInputs, setSavedSearchInputs] = useAtom(
+    savedPresetSearchInputsAtom,
+  );
+  const [draftSearchInputs, setDraftSearchInputs] = useState(
+    emptyPresetSearchInputs,
+  );
+  const searchParams = savedSearchInputs ?? draftSearchInputs;
+  const selectedPlatform =
+    searchParams.platform !== null &&
+    Object.keys(templates).includes(searchParams.platform)
+      ? searchParams.platform
+      : null;
   const [selectedTemplate, setSelectedTemplate] =
     useState<SearchedTemplateInfo | null>(null);
 
-  const [searchParams, setSearchParams] = useState<SearchParams>({
-    template: '',
-    platform: '',
-    command: '',
-  });
+  const updateSearchInputs = (change: Partial<PresetSearchInputs>) => {
+    if (savedSearchInputs !== null) {
+      setSavedSearchInputs((previous) =>
+        previous === null ? null : { ...previous, ...change },
+      );
+      return;
+    }
+    setDraftSearchInputs((previous) => ({ ...previous, ...change }));
+  };
 
   const handleSearchParamsChange = (
     field: keyof SearchParams,
     value: string,
   ) => {
-    setSearchParams((prev) => ({ ...prev, [field]: value }));
+    updateSearchInputs({ [field]: value });
   };
 
   const handlePlatformChange = (platform: string | null) => {
-    setSelectedPlatform(platform);
+    updateSearchInputs({ platform });
   };
 
   const handleAndConditionChange = (value: boolean) => {

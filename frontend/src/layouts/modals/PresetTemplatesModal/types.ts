@@ -14,6 +14,9 @@ export interface PlatformTemplatesDict {
 
 export interface SearchParams {
   template: string;
-  platform: string;
   command: string;
+}
+
+export interface PresetSearchInputs extends SearchParams {
+  platform: string | null;
 }

@@ -5,6 +5,7 @@ import { primaryMode } from '@/features/textfsm/parserSelection';
 import { localStorage, sessionStorage } from './syncStorage';
 
 import type { TextFsmParserMode } from '@/features/textfsm/types';
+import type { PresetSearchInputs } from '@/layouts/modals/PresetTemplatesModal/types';
 import type {
   PlatformPriority,
   TemplateInfo,
@@ -64,6 +65,20 @@ export const platformPrioritiesAtom = atomWithStorage<PlatformPriority[]>(
     getOnInit: true,
   },
 );
+
+export const emptyPresetSearchInputs: PresetSearchInputs = {
+  platform: null,
+  template: '',
+  command: '',
+};
+
+export const savedPresetSearchInputsAtom =
+  atomWithStorage<PresetSearchInputs | null>(
+    'options-preset-search-inputs',
+    null,
+    localStorage(),
+    { getOnInit: true },
+  );
 
 export const rawTextEditorValueAtom = atomWithStorage<string>(
   'data-editor-value',
