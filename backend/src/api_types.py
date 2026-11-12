@@ -7,7 +7,7 @@ class TextFSMParseInput(BaseModel):
     """Input data for TextFSM parsing."""
 
     template_string: str = Field(..., min_length=1, description="TextFSM template content")
-    data_string: str = Field(..., min_length=1, description="Raw text data to parse")
+    data_string: str = Field(..., description="Raw text data to parse")
 
 
 class TextFSMParseResult(BaseModel):

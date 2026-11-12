@@ -10,7 +10,6 @@ from src.api_types import (
     TextFSMParseAPIError,
     TextFSMParseAPIRequest,
     TextFSMParseAPIResponse,
-    TextFSMParseInput,
 )
 from src.config import get_settings
 from src.my_logger import logger
@@ -24,23 +23,18 @@ TEMPLATE_NAME_PATTERN = re.compile(r"^[a-zA-Z0-9_\-\.]+\.textfsm$")
 
 
 @router.post("/parse", response_model=TextFSMParseAPIResponse)
-async def parse(request: TextFSMParseAPIRequest):
+def parse(request: TextFSMParseAPIRequest):
     settings = get_settings()
     if (
         len(request.data.template_string) > settings.max_template_length
         or len(request.data.data_string) > settings.max_data_length
     ):
         raise HTTPException(
-            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
             detail="Payload too large",
         )
     try:
-        result = parse_text(
-            TextFSMParseInput(
-                template_string=request.data.template_string,
-                data_string=request.data.data_string,
-            )
-        )
+        result = parse_text(request.data)
     except HTTPException:
         # Re-raise HTTPException without wrapping
         raise
