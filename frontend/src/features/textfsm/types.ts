@@ -1,6 +1,6 @@
 export type TextFsmListItem = string | Record<string, string | null>;
 export type TextFsmCellValue = string | TextFsmListItem[];
-export type TextFsmParserMode = 'local' | 'backend';
+export type TextFsmParserMode = 'local' | 'backend' | 'pyodide';
 export type TextFsmRecord = Record<string, TextFsmCellValue>;
 
 export interface TextFsmParseInput {
@@ -18,6 +18,7 @@ export type TextFsmErrorCode =
   | 'DATA_TOO_LARGE'
   | 'INVALID_RESULT'
   | 'PACKAGE_ERROR'
+  | 'PYODIDE_INIT'
   | 'RESULT_TOO_LARGE'
   | 'TEMPLATE_TOO_LARGE'
   | 'TIMED_OUT'
