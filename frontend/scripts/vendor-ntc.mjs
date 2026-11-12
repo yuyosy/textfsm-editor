@@ -181,8 +181,26 @@ export async function updateVendor({ version, archive, source, archiveSha256, re
 
 async function main() {
   const args = process.argv.slice(2);
+  if (args.length === 1 && args[0] === '--restore') {
+    const config = createDefaultGeneratorConfig();
+    try {
+      await fs.access(path.join(config.vendorRootPath, 'templates', 'index'));
+      return;
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
+    const source = JSON.parse(await fs.readFile(path.join(config.vendorRootPath, 'SOURCE.json'), 'utf8'));
+    const url = new URL(source.source);
+    if (url.protocol !== 'https:' || url.hostname !== 'files.pythonhosted.org') throw new Error('Unexpected archive host.');
+    await updateVendor({
+      ...config, version: source.version,
+      archive: await fetchBytes(url.href, MAX_ARCHIVE_BYTES),
+      source: url.href, archiveSha256: source.archiveSha256, retrievedAt: source.retrievedAt,
+    });
+    return;
+  }
   if (args.length === 1 && ['--help', '-h'].includes(args[0])) {
-    process.stdout.write('Usage: npm run vendor:ntc -- --version <x.y.z>\n');
+    process.stdout.write('Usage: npm run vendor:ntc -- --version <x.y.z> | --restore\n');
     return;
   }
   if (args.length !== 2 || args[0] !== '--version') throw new Error('Usage: npm run vendor:ntc -- --version <x.y.z>');
