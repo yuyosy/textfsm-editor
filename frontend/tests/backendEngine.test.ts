@@ -12,7 +12,11 @@ const success = {
   ok: true,
   data: {
     header: ['NAME'],
-    results: [{ NAME: 'hello' }, { NAME: ['a', 'b'] }],
+    results: [
+      { NAME: 'hello' },
+      { NAME: ['a', 'b'] },
+      { NAME: [{ name: 'Bob', age: null }] },
+    ],
   },
 };
 

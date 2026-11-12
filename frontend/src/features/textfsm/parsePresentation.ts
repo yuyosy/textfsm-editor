@@ -1,4 +1,4 @@
-import { TextFsmBackendError } from './backendEngine';
+import { TextFsmParseError } from './types';
 
 import type { NotificationItemInfo, ResultError, ResultItem } from '@/types';
 import type { TextFsmErrorCode, TextFsmParseResult } from './types';
@@ -34,7 +34,7 @@ const ERROR_MESSAGES: Record<
     reason: 'Template too large',
   },
   TIMED_OUT: {
-    message: 'Parsing took too long and was stopped.',
+    message: 'Parsing exceeded the time limit.',
     reason: 'Parse timed out',
   },
   TOO_MANY_COLUMNS: {
@@ -64,7 +64,7 @@ type EngineLikeError = {
 const getTimestamp = (): string => new Date().toLocaleString();
 
 const createResultError = (error: unknown): ResultError => {
-  if (error instanceof TextFsmBackendError) {
+  if (error instanceof TextFsmParseError) {
     return { status: '', reason: error.reason, message: error.message };
   }
   const engineError =

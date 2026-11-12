@@ -11,6 +11,7 @@ import { CopyValueButton } from '@/components/CopyValueButton';
 import { FileDownloadButton } from '@/components/FileDownloadButton';
 import { resultJSON, resultTSV } from '@/features/fileNames';
 import { resultViewValueAtom } from '@/features/state/atoms';
+import { formatTextFsmCell } from '@/features/textfsm/formatCell';
 import { useDataDeliver } from '@/hooks/useDataDeliver';
 import { getCurrentDateTimeString } from '@/utils/datetime';
 
@@ -38,7 +39,7 @@ export const ResultViewPanel = ({
       results.map((item, index) => {
         const entries = Object.entries(item).map(([key, val]) => [
           key,
-          Array.isArray(val) ? val.join(', ') : val,
+          formatTextFsmCell(val, ', '),
         ]);
         entries.push(['$index', String(index)]);
         return Object.fromEntries(entries);

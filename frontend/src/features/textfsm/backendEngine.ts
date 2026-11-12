@@ -1,20 +1,17 @@
 import { TEXTFSM_LIMITS, validateParseInput } from './limits';
-import { TextFsmEngineError } from './types';
+import { TextFsmEngineError, TextFsmParseError } from './types';
 
 import type { TextFsmEngine, TextFsmParseResult, TextFsmRecord } from './types';
 
-export class TextFsmBackendError extends Error {
-  constructor(
-    public readonly reason: string,
-    message: string,
-  ) {
-    super(message);
-    this.name = 'TextFsmBackendError';
-  }
-}
-
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const isListItem = (value: unknown): boolean =>
+  typeof value === 'string' ||
+  (isObject(value) &&
+    Object.values(value).every(
+      (field) => typeof field === 'string' || field === null,
+    ));
 
 function parseBackendResponse(value: unknown): TextFsmParseResult {
   if (!isObject(value) || typeof value.ok !== 'boolean') {
@@ -27,7 +24,7 @@ function parseBackendResponse(value: unknown): TextFsmParseResult {
       typeof error.reason === 'string' &&
       typeof error.message === 'string'
     ) {
-      throw new TextFsmBackendError(error.reason, error.message);
+      throw new TextFsmParseError(error.reason, error.message);
     }
     throw new TextFsmEngineError(
       'INVALID_RESULT',
@@ -53,8 +50,7 @@ function parseBackendResponse(value: unknown): TextFsmParseResult {
       !Object.values(record).every(
         (cell) =>
           typeof cell === 'string' ||
-          (Array.isArray(cell) &&
-            cell.every((item) => typeof item === 'string')),
+          (Array.isArray(cell) && cell.every(isListItem)),
       )
     ) {
       throw new TextFsmEngineError('INVALID_RESULT', 'Invalid backend record.');
@@ -149,7 +145,7 @@ export function createBackendTextFsmEngine({
           } catch (error) {
             if (controller.signal.aborted) throw error;
           }
-          throw new TextFsmBackendError(
+          throw new TextFsmParseError(
             `Backend request failed (HTTP ${response.status})`,
             message,
           );
@@ -164,11 +160,11 @@ export function createBackendTextFsmEngine({
             'Backend request stopped.',
           );
         if (
-          error instanceof TextFsmBackendError ||
+          error instanceof TextFsmParseError ||
           error instanceof TextFsmEngineError
         )
           throw error;
-        throw new TextFsmBackendError(
+        throw new TextFsmParseError(
           'Backend unavailable',
           'Could not reach the TextFSM backend. Check the server and API URL.',
         );

@@ -1,4 +1,5 @@
-export type TextFsmCellValue = string | string[];
+export type TextFsmListItem = string | Record<string, string | null>;
+export type TextFsmCellValue = string | TextFsmListItem[];
 export type TextFsmParserMode = 'local' | 'backend';
 export type TextFsmRecord = Record<string, TextFsmCellValue>;
 
@@ -43,6 +44,16 @@ export class TextFsmEngineError extends Error {
       code: this.code,
       message: this.message,
     };
+  }
+}
+
+export class TextFsmParseError extends Error {
+  constructor(
+    public readonly reason: string,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'TextFsmParseError';
   }
 }
 
