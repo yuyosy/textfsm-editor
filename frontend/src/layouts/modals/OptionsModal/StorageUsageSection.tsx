@@ -1,15 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 
 import {
   Anchor,
   Blockquote,
+  Box,
+  Button,
   Flex,
+  Group,
+  Modal,
   NumberFormatter,
   Progress,
   Stack,
   Text,
 } from '@mantine/core';
-import { Info, SquareArrowOutUpRight } from 'lucide-react';
+import { useDisclosure } from '@mantine/hooks';
+import { ChevronDown, Info, SquareArrowOutUpRight } from 'lucide-react';
 
 const calculateLocalStorageUsage = () => {
   let total = 0;
@@ -22,12 +27,21 @@ const calculateLocalStorageUsage = () => {
 export const StorageUsageSection = () => {
   const storageLimit = 5;
   const [storageUsage, setStorageUsage] = useState(0);
+  const [manageOpen, { toggle: toggleManage }] = useDisclosure(false);
+  const manageId = useId();
+  const [confirmClear, { open: openConfirmClear, close: closeConfirmClear }] =
+    useDisclosure(false);
 
   const usagePercentage = (storageUsage / storageLimit) * 100;
 
   useEffect(() => {
     setStorageUsage(calculateLocalStorageUsage());
   }, []);
+
+  const clearStorage = () => {
+    window.localStorage.clear();
+    window.location.reload();
+  };
 
   return (
     <Stack gap="xs">
@@ -97,6 +111,62 @@ export const StorageUsageSection = () => {
           </Flex>
         </Anchor>
       </Blockquote>
+      <Stack gap={4} align="flex-start">
+        <Button
+          variant="subtle"
+          color="gray"
+          size="compact-xs"
+          px={4}
+          aria-expanded={manageOpen}
+          aria-controls={manageId}
+          onClick={toggleManage}
+          rightSection={
+            <ChevronDown
+              size={12}
+              aria-hidden="true"
+              style={{ transform: manageOpen ? 'rotate(180deg)' : undefined }}
+            />
+          }
+        >
+          Manage local storage
+        </Button>
+        <Box id={manageId} hidden={!manageOpen}>
+          <Stack gap={6} align="flex-start">
+            <Text size="xs" c="dimmed">
+              Delete saved templates, history, and settings from this browser. A
+              confirmation dialog opens before anything is deleted.
+            </Text>
+            <Button
+              variant="light"
+              color="red"
+              size="xs"
+              onClick={openConfirmClear}
+            >
+              Clear local storage
+            </Button>
+          </Stack>
+        </Box>
+      </Stack>
+      <Modal
+        opened={confirmClear}
+        onClose={closeConfirmClear}
+        title="Clear local storage?"
+        size="sm"
+        centered
+      >
+        <Text size="sm">
+          This deletes all local storage for this site, including saved
+          templates, history, and settings. This cannot be undone.
+        </Text>
+        <Group justify="flex-end" mt="md">
+          <Button variant="default" onClick={closeConfirmClear} data-autofocus>
+            Cancel
+          </Button>
+          <Button color="red" onClick={clearStorage}>
+            Clear local storage
+          </Button>
+        </Group>
+      </Modal>
     </Stack>
   );
 };
