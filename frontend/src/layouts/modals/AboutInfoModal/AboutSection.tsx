@@ -22,7 +22,7 @@ export const AboutSection = () => {
               <Table.Th fw="normal">License</Table.Th>
               <Table.Td>
                 <Anchor
-                  href="https://github.com/yuyosy/textfsm-editor.react.web/blob/main/LICENSE"
+                  href="https://github.com/yuyosy/textfsm-editor/blob/main/LICENSE"
                   target="_blank"
                   fz={14}
                 >
