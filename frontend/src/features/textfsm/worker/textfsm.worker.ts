@@ -3,5 +3,7 @@ import { handleTextFsmWorkerRequest } from './handleRequest';
 import type { WorkerRequest } from './protocol';
 
 self.onmessage = (event: MessageEvent<WorkerRequest>): void => {
-  self.postMessage(handleTextFsmWorkerRequest(event.data));
+  if (event.data.type === 'parse') {
+    self.postMessage(handleTextFsmWorkerRequest(event.data));
+  }
 };

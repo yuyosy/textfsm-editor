@@ -12,6 +12,7 @@ import { useSetAtom } from 'jotai';
 
 import ResizeHandle from '@/components/resizable-panels/ResizeHandle';
 import { addNotificationAtom } from '@/features/state/atoms';
+import { usePyodidePreload } from '@/hooks/usePyodidePreload';
 import { useAutoRequest } from '@/hooks/useSendRequest';
 import { AppMainToolBar } from './AppMainToolBar';
 import {
@@ -37,6 +38,7 @@ export const AppMain = () => {
   const editorLayout = useDefaultLayout({ id: 'editor' });
 
   const addNotification = useSetAtom(addNotificationAtom);
+  usePyodidePreload();
   useAutoRequest(addNotification);
 
   // Ref State

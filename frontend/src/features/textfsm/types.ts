@@ -76,5 +76,6 @@ export interface TextFsmEngine {
     input: TextFsmParseInput,
     options?: TextFsmParseOptions,
   ): Promise<TextFsmParseResult>;
+  preload?(options?: TextFsmParseOptions): Promise<void>;
   dispose(): void;
 }

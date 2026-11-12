@@ -1,10 +1,6 @@
 import { atom } from 'jotai';
 
-import {
-  cancelParsing,
-  getParseRunner,
-  primaryMode,
-} from '@/features/textfsm/parserSelection';
+import { cancelParsing, primaryMode } from '@/features/textfsm/parserSelection';
 import {
   addNotificationAtom,
   isPyodideLoadingAtom,
@@ -85,7 +81,7 @@ export const changeParserModeAtom = atom(
 
 export const cancelPyodideLoadAtom = atom(null, (get, set) => {
   if (!get(isPyodideLoadingAtom)) return;
-  getParseRunner('pyodide').invalidateActive();
+  cancelParsing();
   set(reportPyodideLoadStatusAtom, 'cancelled');
 });
 

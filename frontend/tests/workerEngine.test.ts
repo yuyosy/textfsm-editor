@@ -23,6 +23,56 @@ function createWorker() {
 
 afterEach(() => vi.useRealTimers());
 
+test('preloads without parsing and reuses the same worker for a queued parse', async () => {
+  const { worker, postMessage, terminate } = createWorker();
+  const factory = vi.fn(() => worker);
+  const engine = createWorkerTextFsmEngine(factory, {
+    initializationTimeoutMs: 60_000,
+  });
+  const loading = engine.preload?.();
+  const result = engine.parse(input);
+  expect(postMessage).toHaveBeenCalledOnce();
+  const initialize = postMessage.mock.calls[0][0];
+  expect(initialize).toEqual({ type: 'initialize', id: initialize.id });
+
+  worker.onmessage?.(
+    new MessageEvent('message', {
+      data: { id: initialize.id, type: 'initialized' },
+    }),
+  );
+  await loading;
+  const request = postMessage.mock.calls[1][0];
+  expect(request).toEqual({ type: 'parse', id: request.id, input });
+  expect(factory).toHaveBeenCalledOnce();
+  expect(terminate).not.toHaveBeenCalled();
+
+  const data = { header: ['FIELD'], records: [] };
+  worker.onmessage?.(
+    new MessageEvent('message', {
+      data: { id: request.id, type: 'success', result: data },
+    }),
+  );
+  await expect(result).resolves.toEqual(data);
+  engine.dispose();
+});
+
+test('cancelling a preload stops a parse that was waiting for it', async () => {
+  const { worker, postMessage, terminate } = createWorker();
+  const engine = createWorkerTextFsmEngine(() => worker, {
+    initializationTimeoutMs: 60_000,
+  });
+  const controller = new AbortController();
+  const loading = engine.preload?.({ signal: controller.signal });
+  const result = engine.parse(input);
+
+  controller.abort();
+
+  await expect(loading).rejects.toMatchObject({ code: 'ABORTED' });
+  await expect(result).rejects.toMatchObject({ code: 'ABORTED' });
+  expect(postMessage).toHaveBeenCalledOnce();
+  expect(terminate).toHaveBeenCalledOnce();
+});
+
 test('starts the parsing timeout after Pyodide initializes', async () => {
   vi.useFakeTimers();
   const { worker, postMessage, terminate } = createWorker();

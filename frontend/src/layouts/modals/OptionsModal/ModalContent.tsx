@@ -20,8 +20,10 @@ import {
 
 import {
   emptyPresetSearchInputs,
+  pyodidePreloadEnabledAtom,
   savedPresetSearchInputsAtom,
 } from '@/features/state/storageAtoms';
+import { primaryMode } from '@/features/textfsm/parserSelection';
 import { HistoryAutoSaveSection } from './HistoryAutoSaveSection';
 import { ParseDelaySection } from './ParseDelaySection';
 import { PlatformPrioritySection } from './PlatformPrioritySection';
@@ -33,6 +35,9 @@ import type { ModalContentProps } from '../types';
 export const OptionsModalContent = ({ focusRef, close }: ModalContentProps) => {
   const [savedPresetSearch, setSavedPresetSearch] = useAtom(
     savedPresetSearchInputsAtom,
+  );
+  const [preloadPyodide, setPreloadPyodide] = useAtom(
+    pyodidePreloadEnabledAtom,
   );
 
   return (
@@ -112,7 +117,22 @@ export const OptionsModalContent = ({ focusRef, close }: ModalContentProps) => {
                 <HistoryAutoSaveSection />
               </Tabs.Panel>
               <Tabs.Panel value="general" py={8}>
-                <StorageUsageSection />
+                <Stack gap="md">
+                  {primaryMode === 'pyodide' && (
+                    <>
+                      <Switch
+                        label="Preload Pyodide"
+                        description="Download the runtime and Python TextFSM in advance when Pyodide is selected."
+                        checked={preloadPyodide}
+                        onChange={(event) =>
+                          setPreloadPyodide(event.currentTarget.checked)
+                        }
+                      />
+                      <Divider />
+                    </>
+                  )}
+                  <StorageUsageSection />
+                </Stack>
               </Tabs.Panel>
             </ScrollArea>
           </Tabs>

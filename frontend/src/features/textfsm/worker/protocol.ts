@@ -4,14 +4,15 @@ import type {
   TextFsmParseResult,
 } from '../types';
 
-export type WorkerRequest = {
-  id: string;
-  type: 'parse';
-  input: TextFsmParseInput;
-};
+export type WorkerOperation =
+  | { type: 'parse'; input: TextFsmParseInput }
+  | { type: 'initialize' };
+
+export type WorkerRequest = WorkerOperation & { id: string };
 
 export type WorkerResponse =
   | { id: string; type: 'started' }
+  | { id: string; type: 'initialized' }
   | { id: string; type: 'loading-package' }
   | { id: string; type: 'success'; result: TextFsmParseResult }
   | {
