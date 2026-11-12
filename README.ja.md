@@ -1,21 +1,18 @@
 <p align="center">
-  <a href="https://github.com/yuyosy/textfsm-editor.react.web" target="_blank" rel="noopener noreferrer">
-    <img width="180" src="pictures/icon.svg" alt="Vite logo">
+  <a href="https://github.com/yuyosy/textfsm-editor" target="_blank" rel="noopener noreferrer">
+    <img width="180" src="pictures/icon.svg" alt="TextFSM Editor logo">
   </a>
 </p>
 
 # TextFSM Editor
 
-ネットワークエンジニアや開発者が TextFSM テンプレートを効率的に作成・テストできる、リアルタイム解析機能を備えた Web ベースのTextFSMエディタです。
+ネットワークエンジニアや開発者が TextFSM テンプレートを作成・検証できる Web アプリです。テンプレートを入力し、サンプルデータを適用して、表形式や JSON 形式で結果を確認できます。
 
-English version: [English README](README.md)
+English version: [README.md](README.md)
 
 > [!NOTE]
 >
-> 本プロジェクトは現在開発中です。  
-> 一部のコードは非効率な実装の場合があります。  
-> セキュリティ上の考慮が十分でない可能性があります。  
-> 本ドキュメントは作業途中のため、不完全または不正確な部分があるかもしれません。
+> 本プロジェクトは開発途中です。実装や性能の改善余地があり、セキュリティ面や運用面の強化が必要な場合があります。
 
 ![screenshot1](pictures/editor.png)
 
@@ -73,221 +70,124 @@ English version: [English README](README.md)
 
 ## プロジェクト構成
 
+```text
+textfsm-editor/
+├ backend/                              # FastAPI バックエンド
+│   ├ src/                               # Python アプリケーションコード
+│   ├ public/                            # 静的アセットと生成物
+│   ├ pyproject.toml                     # Python の依存関係と設定
+│   ├ Dockerfile                         # バックエンド用コンテナ定義
+│   └ ...
+├ frontend/                             # React フロントエンド
+│   ├ src/                               # TypeScript アプリケーションコード
+│   ├ public/                            # Vite が扱う静的アセット
+│   ├ package.json                       # フロントエンドの依存関係とスクリプト
+│   └ ...
+├ docker-compose.yml                    # Docker 環境設定
+├ README.md                             # 英語版 README
+├ README.ja.md                          # 日本語版 README
+├ CONTRIBUTING.md                       # 開発と貢献のガイド
+├ textfsm-editor.code-workspace
+├ pictures/                             # 画像素材
+└ ...
 ```
-textfsm-editor.react.web/
-├ Frontend/                                # React フロントエンドアプリケーション
-│   ├ src/                                  # ソースコード
-│   ├ package.json                          # フロントエンドのプロジェクト情報と依存関係
-│   └ ***                                   # その他のフロントエンドファイル
-├ Backend/                                 # Python バックエンドアプリケーション
-│   ├ src/                                  # ソースコード
-│   ├ pyproject.toml                        # バックエンドのプロジェクト情報と依存関係
-│   └ ***                                   # その他のバックエンドファイル
-├ textfsm-editor.react.web.code-workspace  # VSCode ワークスペースファイル
-├ README.md                                # 英語版 README
-├ README.ja.md                             # このファイル
-└ ***                                      # その他のワークスペースファイル
-```
 
-VSCodeで textfsm-editor.react.web.code-workspace ファイルを開いて、ワークスペース全体を読み込みます。
+VS Code で `textfsm-editor.code-workspace` を開くと、両方のアプリをまとめて開発できます。
 
-## 始め方
-
-- 基本環境 (Node.js + Python)
-  - Dockerを使わずに Node.js と Python で直接実行する
-  - 詳細: [基本環境での始め方](#基本環境での始め方)
-- Docker Compose
-  - 詳細: [Docker Compose環境での始め方](#docker-compose環境での始め方)
-
-
-### 備考
-
-このソフトウェアは、外部 CDN である jsDelivr から Monaco Editor (Microsoft) を読み込みます。
-- https://www.jsdelivr.com/package/npm/monaco-editor
-
-
-## 基本環境での始め方
+## はじめ方
 
 ### 前提条件
 
-- Node.js (v16以上)
-- npm
-- Python (v3.8以上)
-- uv (推奨)
+- Node.js 20+ と npm
+- Python 3.12+
+- Backend 用の依存関係管理に `uv`
+- Docker + Docker Compose（任意）
 
-### インストール
-
-1. リポジトリをクローン
+### 依存関係のインストール
 
 ```bash
-git clone https://github.com/yourusername/textfsm-editor.react.web.git
-cd textfsm-editor.react.web
-```
+git clone https://github.com/yuyosy/textfsm-editor.git
+cd textfsm-editor
 
-2. Frontend のセットアップ
-
-```bash
-# プロジェクトルートディレクトリでコマンドを実行
 cd frontend
 npm install
-```
 
-3. Backend のセットアップ
-
-```bash
-# プロジェクトルートディレクトリでコマンドを実行
-cd backend
+cd ../backend
 uv sync
 ```
 
-### 開発
+### 開発モードで起動
 
-フロントエンドとバックエンドは別々のターミナルで実行してください。
-
-1. Frontend の起動
+別々のターミナルで次を実行してください。
 
 ```bash
+# Terminal 1: フロントエンド（通常の開発モード）
 cd frontend
 npm run dev
 ```
 
-※ 起動時にポート番号を変更する場合は、`--port` オプションを使用してください。
-
-2. Backend の起動
-
 ```bash
+# Terminal 2: バックエンド API
 cd backend
 uv run uvicorn src.main:app --reload
 ```
 
-※ 起動時にポート番号を変更する場合は、`--port` オプションを使用してください。
+ブラウザ側で動く Pyodide モードでも起動できます。バックエンドなしでローカル処理を試したい場合は次を使います。
 
-3. 各サービスへのアクセス  
-- フロントエンド: http://localhost:5173  
-- バックエンド: http://localhost:8000
+```bash
+cd frontend
+npm run dev -- --mode pyodide
+```
 
-### 本番環境
+これはブラウザ内で Python の TextFSM を実行する経路を確認するためのモードです。選択した処理方式はローカルストレージに保存されます。
 
-> [!WARNING]
->
-> この本番環境構成は個人利用や内部ツール向けです。
-> インターネットに公開するアプリケーションとして十分なセキュリティやパフォーマンスを担保していない場合があります。
-> 公開環境へのデプロイには、以下のような追加の対策を検討してください:
-> - SSL/TLS 終端を行うリバースプロキシ (Nginx, Caddy, Traefik 等)
-> - レート制限と DDoS 対策
-> - Web アプリケーションファイアウォール (WAF)
+アクセス先:
 
-1. フロントエンドをビルドしてバックエンドにデプロイ
+- フロントエンド: `http://localhost:5173`
+- バックエンド API: `http://localhost:8000`
+
+### ビルドモード
+
+フロントエンドでは複数の処理方式を切り替えられます。
+
+- `npm run build:backend` — 通常のバックエンド API 連携向けのビルド
+- `npm run build:pyodide` — Pyodide を使うブラウザ静的ビルド
+- `npm run build` — バックエンド向けビルドの実行
+- `npm run build:deploy` — フロントエンドをビルドしてバックエンドへ配置
+
+### Docker Compose を使う場合
+
+```bash
+docker compose --profile dev up --build --watch
+```
+
+コンテナ起動後は上記と同じ URL でアクセスできます。
+
+## 本番ビルド
 
 ```bash
 cd frontend
 npm run build:deploy
 ```
 
-このコマンドでフロントエンドをビルドし、`backend/public/static/` に出力をコピーします。
-
-2. バックエンドを本番モードで起動
+このコマンドでフロントエンドをビルドし、生成した静的ファイルをバックエンド側へ配置します。その後、バックエンドを本番モードで起動します。
 
 ```bash
 cd backend
 MODE=production uv run uvicorn src.main:app --host 0.0.0.0 --port 8000
 ```
 
-3. サービスへのアクセス
-   - サービス: `http://localhost:8000`
+## 開発ガイド
 
-#### 環境変数
+セットアップ、品質確認、貢献手順については [CONTRIBUTING.md](./CONTRIBUTING.md) を参照してください。
 
-| 変数名 | デフォルト値 | 説明 |
-|--------|-------------|------|
-| `MODE` | `development` | `production` で本番モード |
-| `LOG_LEVEL` | `INFO` | ログレベル (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
-| `DOCS_ENABLED` | `true` | APIドキュメント (`/docs`) の有効/無効 |
-| `ALLOWED_HOSTS` | `localhost:5173,localhost:8000,localhost` | 許可するホスト (カンマ区切り) |
-| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173` | 許可するCORSオリジン (カンマ区切り) |
-| `ENABLE_HTTPS_REDIRECT` | `false` | HTTPSリダイレクトの有効/無効 (SSL付きリバースプロキシ使用時は `true`) |
+## ライセンス
 
-## Docker Compose環境での始め方
+MIT License. Copyright (c) 2023 yuyosy
 
-### 前提条件
+## 参考
 
-- Docker
-- Docker Compose
-
-### インストール
-
-1. リポジトリをクローン
-
-```bash
-git clone https://github.com/yourusername/textfsm-editor.react.web.git
-cd textfsm-editor.react.web
-```
-
-2. コンテナのビルド
-
-```bash
-docker compose build
-```
-
-### 開発用
-
-1. コンテナの起動
-
-```bash
-docker compose --profile dev up --build --watch
-```
-
-2. 各サービスへのアクセス
-   - フロントエンド: `http://localhost:5173`
-   - バックエンド: `http://localhost:8000`
-
-### 本番環境
-
-> [!WARNING]
->
-> この本番環境構成は個人利用や内部ツール向けです。
-> インターネットに公開するアプリケーションとして十分なセキュリティやパフォーマンスを担保していない場合があります。
-> 公開環境へのデプロイには、以下のような追加の対策を検討してください:
-> - SSL/TLS 終端
-> - レート制限と DDoS 対策
-> - Web アプリケーションファイアウォール (WAF)
-> - 定期的なセキュリティ監査
-
-2つの本番構成が利用可能です:
-
-#### オプション 1: バックエンドが静的ファイルを配信
-
-```bash
-docker compose --profile prod up --build
-```
-
-- アクセス: `http://localhost:8000`
-
-#### オプション 2: Nginx + バックエンドAPI（高トラフィック向け推奨）
-
-```bash
-docker compose --profile prod-nginx up --build
-```
-
-- アクセス: `http://localhost:80`
-
-## Contributing
-
-コントリビューション大歓迎です！お気軽にプルリクエストをお送りください。
-
-1. リポジトリをフォーク
-2. 機能ブランチを作成 (`git checkout -b feature/AmazingFeature`)
-3. 変更をコミット (`git commit -m 'Add some AmazingFeature'`)
-4. ブランチにプッシュ (`git push origin feature/AmazingFeature`)
-5. プルリクエストを作成
-
-## License
-
-MIT License Copyright (c) 2023 yuyosy
-
-
-## References
-
-- [GitHub - microsoft/monaco-editor](https://github.com/microsoft/monaco-editor)
+- [Monaco Editor](https://github.com/microsoft/monaco-editor)
 - [React](https://react.dev)
 - [Vite](https://vitejs.dev)
+- [FastAPI](https://fastapi.tiangolo.com)

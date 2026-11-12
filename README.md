@@ -1,27 +1,22 @@
 <p align="center">
-  <a href="https://github.com/yuyosy/textfsm-editor.react.web" target="_blank" rel="noopener noreferrer">
-    <img width="180" src="pictures/icon.svg" alt="Vite logo">
+  <a href="https://github.com/yuyosy/textfsm-editor" target="_blank" rel="noopener noreferrer">
+    <img width="180" src="pictures/icon.svg" alt="TextFSM Editor logo">
   </a>
 </p>
 
 # TextFSM Editor
 
-A web-based editor for TextFSM templates with real-time parsing capabilities. This tool enables network engineers and developers to efficiently create and test TextFSM templates with instant feedback.
+A web-based editor for TextFSM templates with real-time parsing and validation. It helps network engineers and developers compose templates, run them against sample data, and inspect the parsed results in table or JSON form.
 
-日本語版はこちら: [Japanese README](README.ja.md)
+日本語版: [README.ja.md](README.ja.md)
 
 > [!NOTE]
 >
-> This project is currently under development.
-> Some parts of the code may be inefficient.
-> Security considerations may be insufficient.
-> This documentation is a work in progress and may be incomplete or inaccurate.
+> This project is under active development. Some parts of the implementation may still be rough, and security/performance hardening may be incomplete.
 
 ![screenshot1](pictures/editor.png)
 
 ## Features
-
-### Editor Features
 
 - 🎨 Interface Themes
   - Light and Dark mode support
@@ -71,221 +66,127 @@ JSON display of parsed data
 Editor's useful features
 ![Editor features](pictures/editor-features.png)
 
-## Project Structure
 
+## Project structure
 
+```text
+textfsm-editor/
+├ backend/                              # FastAPI backend
+│   ├ src/                               # Python application code
+│   ├ public/                            # Static assets and generated output
+│   ├ pyproject.toml                     # Python project metadata and dependencies
+│   ├ Dockerfile                         # Backend container definition
+│   └ ...
+├ frontend/                             # React frontend
+│   ├ src/                               # TypeScript application source
+│   ├ public/                            # Static assets bundled by Vite
+│   ├ package.json                       # Frontend scripts and dependencies
+│   └ ...
+├ docker-compose.yml                    # Container orchestration
+├ README.md                             # English overview
+├ README.ja.md                          # Japanese overview
+├ CONTRIBUTING.md                       # Development and contribution workflow
+├ textfsm-editor.code-workspace
+├ pictures/                             # Screenshots and icons
+└ ...
 ```
-textfsm-editor.react.web/
-├ Frontend/                                # React frontend application
-│   ├ src/                                  # Source files
-│   ├ package.json                          # Frontend project information and dependencies
-│   └ ***                                   # Frontend other files
-├ Backend/                                 # Python backend application
-│   ├ src/                                  # Source files
-│   ├ pyproject.toml                        # Backend project information and dependencies
-│   └ ***                                   # Backend other files
-├ textfsm-editor.react.web.code-workspace  # VSCode workspace file
-├ README.md                                # This file
-└ ***                                      # Workspace other files
-```
 
-Open the `textfsm-editor.react.web.code-workspace` file with VSCode to open the workspace.
+Open the workspace file in VS Code to work on both applications together.
 
-## Getting Started
-- Basic Environment (Node.js + Python)
-  - Run Node.js and Python directly without Docker.
-  - See: [Getting Started (Basic Environment)](#getting-started-basic-environment)
-- Docker Compose
-  - See: [Getting Started with Docker Compose](#getting-started-with-docker-compose)
+## Quick start
 
-### Notice
+### Prerequisites
 
-This software loads Monaco Editor (Microsoft) from jsDelivr, an external CDN.
-- https://www.jsdelivr.com/package/npm/monaco-editor
+- Node.js 20+ and npm
+- Python 3.12+
+- uv for backend dependency installation
+- Docker + Docker Compose (optional)
 
-
-### Getting Started (Basic Environment)
-
-#### Prerequisites
-
-- Node.js (v16 or higher)
-- npm
-- Python (v3.8 or higher)
-- uv (recommended for Python environment)
-
-#### Installation
-
-1. Clone the repository:
+### Install dependencies
 
 ```bash
-git clone https://github.com/yourusername/textfsm-editor.react.web.git
-cd textfsm-editor.react.web
-```
+git clone https://github.com/yuyosy/textfsm-editor.git
+cd textfsm-editor
 
-2. Setup Frontend
-
-```bash
-# run command in the project root directory
 cd frontend
 npm install
-```
 
-3. Setup Backend
-
-```bash
-# run command in the project root directory
-cd backend
+cd ../backend
 uv sync
 ```
 
-#### Development
+### Run in development mode
 
-The frontend and backend must be run separately. It is recommended to open them in separate terminals.
-
-1. Run Frontend
+Open two terminals.
 
 ```bash
+# Terminal 1: frontend (standard dev mode)
 cd frontend
 npm run dev
 ```
 
-**Tip:** If you want to change the port number at startup, use the `--port` option.
-
-2. Run Backend
-
 ```bash
+# Terminal 2: backend API
 cd backend
 uv run uvicorn src.main:app --reload
 ```
 
-**Tip:** If you want to change the port number at startup, use the `--port` option.
+You can also run the frontend in the browser-side Pyodide mode for local parsing without the backend:
 
-3. Access the services
-   - Frontend Service: `http://localhost:5173`
-   - Backend Service: `http://localhost:8000`
+```bash
+cd frontend
+npm run dev -- --mode pyodide
+```
 
-#### Production
+This is useful for testing the browser-only execution path. The app still exposes the same frontend URL on Vite, and the selected parser mode is saved in local storage.
 
-> [!WARNING]
->
-> This production configuration is intended for personal use or internal tools.
-> It may not provide sufficient security or performance for public-facing applications.
-> For production deployments exposed to the internet, consider additional measures such as:
-> - Reverse proxy with SSL/TLS termination (e.g., Nginx, Caddy, Traefik)
-> - Rate limiting and DDoS protection
-> - Web Application Firewall (WAF)
+Then open:
 
-1. Build and deploy frontend to backend
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:8000`
+
+### Build modes
+
+The frontend supports multiple processing modes:
+
+- `npm run build:backend` — builds the normal app and targets the backend API flow
+- `npm run build:pyodide` — builds the static browser version using Pyodide
+- `npm run build` — same as the backend build
+- `npm run build:deploy` — builds the frontend and copies it into the backend for production serving
+
+### Docker Compose
+
+```bash
+docker compose --profile dev up --build --watch
+```
+
+Access the same endpoints above after the containers start.
+
+## Production build
 
 ```bash
 cd frontend
 npm run build:deploy
 ```
 
-This command builds the frontend and copies the output to `backend/public/static/`.
-
-2. Run Backend in production mode
+This builds the frontend and copies the generated static files to the backend. Then run the backend in production mode:
 
 ```bash
 cd backend
 MODE=production uv run uvicorn src.main:app --host 0.0.0.0 --port 8000
 ```
 
-3. Access the service
-   - Service: `http://localhost:8000`
+## Development guide
 
-##### Environment Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `MODE` | `development` | Set to `production` for production mode |
-| `LOG_LEVEL` | `INFO` | Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
-| `DOCS_ENABLED` | `true` | Enable/disable API documentation (`/docs`) |
-| `ALLOWED_HOSTS` | `localhost:5173,localhost:8000,localhost` | Comma-separated list of allowed hosts |
-| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173` | Comma-separated list of allowed CORS origins |
-| `ENABLE_HTTPS_REDIRECT` | `false` | Enable HTTPS redirect (set `true` when using reverse proxy with SSL) |
-
-### Getting Started with Docker Compose
-
-#### Prerequisites
-
-- Docker
-- Docker Compose
-
-#### Installation
-
-1. Clone the repository
-
-```bash
-git clone https://github.com/yourusername/textfsm-editor.react.web.git
-cd textfsm-editor.react.web
-```
-
-2. Build containers
-
-```bash
-docker compose build
-```
-
-#### Development
-
-1. Start containers
-```bash
-docker compose --profile dev up --build --watch
-```
-
-2. Access the services
-   - Frontend Service: `http://localhost:5173`
-   - Backend Service: `http://localhost:8000`
-
-#### Production
-
-> [!WARNING]
->
-> This production configuration is intended for personal use or internal tools.
-> It may not provide sufficient security or performance for public-facing applications.
-> For production deployments exposed to the internet, consider additional measures such as:
-> - SSL/TLS termination
-> - Rate limiting and DDoS protection
-> - Web Application Firewall (WAF)
-> - Regular security audits
-
-Two production configurations are available:
-
-##### Option 1: Backend serves static files
-
-```bash
-docker compose --profile prod up --build
-```
-
-- Access: `http://localhost:8000`
-
-##### Option 2: Nginx + Backend API (recommended for high traffic)
-
-```bash
-docker compose --profile prod-nginx up --build
-```
-
-- Access: `http://localhost:80`
-
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+For setup details, code quality checks, and contribution workflow, see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## License
 
-MIT License Copyright (c) 2023 yuyosy
-
+MIT License. Copyright (c) 2023 yuyosy
 
 ## References
 
-- [GitHub - microsoft/monaco-editor](https://github.com/microsoft/monaco-editor)
+- [Monaco Editor](https://github.com/microsoft/monaco-editor)
 - [React](https://react.dev)
 - [Vite](https://vitejs.dev)
+- [FastAPI](https://fastapi.tiangolo.com)

@@ -1,6 +1,6 @@
 [project]
 name = "textfsm-editor-backend"
-version = "0.1.0"
+version = "2.0.0"
 description = "Backend API for TextFSM Editor"
 authors = [
     { name = "yuyosy", email = "y-ysss@outlook.com" }
