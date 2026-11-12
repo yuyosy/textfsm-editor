@@ -1535,7 +1535,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------
 
-dompurify 3.4.15
+dompurify 3.4.8
 License: (MPL-2.0 OR Apache-2.0)
 Project: https://github.com/cure53/DOMPurify
 
@@ -2844,7 +2844,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------
 
-monaco-editor 0.57.0
+monaco-editor 0.56.0
 License: MIT
 Project: https://github.com/microsoft/monaco-editor
 
@@ -3991,7 +3991,7 @@ PERFORMANCE OF THIS SOFTWARE.
 
 ------------------------------------------------------------
 
-txtfsm 0.2.0
+txtfsm 0.2.1
 License: Apache-2.0
 Project: https://github.com/yuyosy/txtfsm
 
