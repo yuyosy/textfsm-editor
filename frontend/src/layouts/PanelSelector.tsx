@@ -1,5 +1,5 @@
 import { Flex, SegmentedControl } from '@mantine/core';
-import { Columns2, PanelLeftClose, PanelRightClose } from 'lucide-react';
+import { Columns2, FileCode2, FileText } from 'lucide-react';
 
 import type { RefObject } from 'react';
 import type { PanelImperativeHandle } from 'react-resizable-panels';
@@ -21,7 +21,8 @@ export const PanelSelector = ({
   return (
     <SegmentedControl
       size="xs"
-      color="var(--mantine-primary-color-filled)"
+      color="blue.8"
+      aria-label="Editor layout"
       value={mainPanelLyout}
       onChange={(value) => {
         if (value === 'both') {
@@ -40,7 +41,7 @@ export const PanelSelector = ({
         {
           label: (
             <Flex align="center" gap={4}>
-              <Columns2 size={14} strokeWidth={1.4} />
+              <Columns2 size={14} aria-hidden="true" />
               Both
             </Flex>
           ),
@@ -49,7 +50,7 @@ export const PanelSelector = ({
         {
           label: (
             <Flex align="center" gap={4}>
-              <PanelRightClose size={14} strokeWidth={1.4} />
+              <FileText size={14} aria-hidden="true" />
               Data
             </Flex>
           ),
@@ -58,7 +59,7 @@ export const PanelSelector = ({
         {
           label: (
             <Flex align="center" gap={4}>
-              <PanelLeftClose size={14} strokeWidth={1.4} />
+              <FileCode2 size={14} aria-hidden="true" />
               Template
             </Flex>
           ),
