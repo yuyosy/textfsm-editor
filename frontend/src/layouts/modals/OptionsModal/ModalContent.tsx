@@ -41,17 +41,32 @@ export const OptionsModalContent = ({ focusRef, close }: ModalContentProps) => {
   );
 
   return (
-    <Modal.Content>
-      <Modal.Header>
+    <Modal.Content
+      h="min(44rem, calc(100dvh - 2rem))"
+      styles={{ content: { display: 'flex', flexDirection: 'column' } }}
+    >
+      <Modal.Header style={{ flexShrink: 0 }}>
         <Modal.Title fz={18} fw={700}>
           Options
         </Modal.Title>
         <Modal.CloseButton />
       </Modal.Header>
-      <Modal.Body>
-        <Stack ref={focusRef}>
-          <Tabs variant="outline" defaultValue="editor">
-            <Tabs.List>
+      <Modal.Body
+        display="flex"
+        flex={1}
+        mih={0}
+        style={{ flexDirection: 'column' }}
+      >
+        <Stack ref={focusRef} flex={1} mih={0}>
+          <Tabs
+            variant="outline"
+            defaultValue="editor"
+            display="flex"
+            flex={1}
+            mih={0}
+            style={{ flexDirection: 'column' }}
+          >
+            <Tabs.List style={{ flexShrink: 0 }}>
               <Tabs.Tab
                 value="editor"
                 p={8}
@@ -88,7 +103,15 @@ export const OptionsModalContent = ({ focusRef, close }: ModalContentProps) => {
                 General
               </Tabs.Tab>
             </Tabs.List>
-            <ScrollArea h={500} p={16} type="always" offsetScrollbars>
+            <ScrollArea
+              flex={1}
+              mih={0}
+              px={8}
+              py={12}
+              type="auto"
+              scrollbars="y"
+              offsetScrollbars="y"
+            >
               <Tabs.Panel value="editor" py={8}>
                 <ParseDelaySection />
               </Tabs.Panel>
@@ -137,7 +160,7 @@ export const OptionsModalContent = ({ focusRef, close }: ModalContentProps) => {
             </ScrollArea>
           </Tabs>
         </Stack>
-        <Group justify="space-between" mt="lg">
+        <Group justify="space-between" mt="lg" style={{ flexShrink: 0 }}>
           <Button variant="default" size="xs" onClick={close}>
             Close
           </Button>

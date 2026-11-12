@@ -32,29 +32,35 @@ export const PlatformPrioritySection = () => {
         the same priority are sorted in ascending order.
       </Text>
       <DataTable
-        height={320}
         idAccessor="platform"
         records={platforms}
         columns={[
           {
             accessor: 'platform',
             title: 'Platform',
-            render: (record) => normalize(record.platform),
+            render: (record) => (
+              <Text size="sm" style={{ overflowWrap: 'anywhere' }}>
+                {normalize(record.platform)}
+              </Text>
+            ),
           },
           {
             accessor: 'priority',
             title: 'Priority',
+            width: 132,
             render: (record) => (
-              <Group>
+              <Group gap={4} wrap="nowrap">
                 <ActionIcon
-                  size="ms"
+                  size="sm"
                   color="gray"
                   variant="transparent"
+                  aria-label={`Reset priority for ${normalize(record.platform)}`}
                   onClick={() => removePlatformPriority(record.platform)}
                 >
                   <StarOff size={16} />
                 </ActionIcon>
                 <Rating
+                  size="sm"
                   value={record.priority}
                   onChange={(value) =>
                     setPlatformPriority(record.platform, value)
@@ -65,7 +71,7 @@ export const PlatformPrioritySection = () => {
             ),
           },
         ]}
-        scrollAreaProps={{ type: 'always', offsetScrollbars: 'y' }}
+        scrollAreaProps={{ scrollbars: false }}
         borderRadius="sm"
         withTableBorder
         withColumnBorders

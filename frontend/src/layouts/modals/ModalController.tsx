@@ -19,6 +19,7 @@ export const ModalController = () => {
   const [controlModal, setControlModalAtom] = useAtom(controlModalAtom);
   const focusRef = useRef<HTMLDivElement>(null);
   const { focused } = useFocusWithin();
+  const isOptions = controlModal.type === 'options';
   const close = () =>
     setControlModalAtom({ opened: false, type: 'not-active' });
 
@@ -27,7 +28,10 @@ export const ModalController = () => {
       opened={controlModal.opened}
       onClose={close}
       closeOnEscape={!focused}
-      size="lg"
+      size={isOptions ? '45rem' : 'lg'}
+      centered={isOptions}
+      xOffset={isOptions ? '1rem' : undefined}
+      yOffset={isOptions ? '1rem' : undefined}
     >
       <Modal.Overlay />
       {controlModal.opened && controlModal.type === 'preset-templates' && (
