@@ -1,16 +1,19 @@
 import {
+  ActionIcon,
   CloseButton,
   Code,
   Divider,
   Group,
-  HoverCard,
+  Paper,
+  Popover,
   Select,
+  SimpleGrid,
   Stack,
   Switch,
   Text,
   TextInput,
 } from '@mantine/core';
-import { CircleHelp } from 'lucide-react';
+import { CircleHelp, Layers, Search, Terminal } from 'lucide-react';
 
 import { normalize } from '@/utils/stringHelpers';
 import { usePlatformPriority } from './hooks/usePlatformPriority';
@@ -41,6 +44,7 @@ export const SearchForm = ({
   handleFuzzyEnabledChange,
 }: SearchFormProps) => {
   const { platformPriorities } = usePlatformPriority();
+  const filtersDisabled = selectedPlatform === null;
 
   const groupedPlatforms = Object.keys(templates).reduce(
     (acc, platform) => {
@@ -60,74 +64,114 @@ export const SearchForm = ({
     .sort((a, b) => b - a);
 
   return (
-    <Stack>
-      <Select
-        label="Select Platform"
-        placeholder="Pick one"
-        data={sortedGroups.map((priority) => ({
-          group: `Priority ${priority}`,
-          items: groupedPlatforms[priority].map((platform) => ({
-            value: platform,
-            label: normalize(platform),
-          })),
-        }))}
-        value={selectedPlatform}
-        onChange={handlePlatformChange}
-        comboboxProps={{ shadow: 'lg' }}
-        clearable
-        searchable
-      />
-      <Divider my="2" />
-      <TextInput
-        label="Template Name"
-        placeholder="Search by template name"
-        value={searchParams.template}
-        onChange={(e) => handleSearchParamsChange('template', e.target.value)}
-        rightSection={
-          <CloseButton
-            size="sm"
-            onClick={() => handleSearchParamsChange('template', '')}
-          />
-        }
-      />
-      <TextInput
-        label="Command"
-        placeholder="Search by command"
-        value={searchParams.command}
-        onChange={(e) => handleSearchParamsChange('command', e.target.value)}
-        rightSection={
-          <CloseButton
-            size="sm"
-            onClick={() => handleSearchParamsChange('command', '')}
-          />
-        }
-      />
-      <Group>
-        <Switch
-          size="xs"
-          label="Use AND condition for filters"
-          checked={isAndCondition}
-          onChange={(e) => handleAndConditionChange(e.currentTarget.checked)}
+    <Paper withBorder radius="md" p="sm">
+      <Stack gap="sm">
+        <Select
+          label="Platform"
+          placeholder="Choose a platform"
+          leftSection={<Layers size={16} aria-hidden="true" />}
+          data={sortedGroups.map((priority) => ({
+            group: `Priority ${priority}`,
+            items: groupedPlatforms[priority].map((platform) => ({
+              value: platform,
+              label: normalize(platform),
+            })),
+          }))}
+          value={selectedPlatform}
+          onChange={handlePlatformChange}
+          comboboxProps={{ shadow: 'lg' }}
+          clearable
+          clearButtonProps={{ 'aria-label': 'Clear platform' }}
+          searchable
         />
-        <Switch
-          size="xs"
-          label="Enable Fuzzy Match"
-          checked={isFuzzyEnabled}
-          onChange={(e) => handleFuzzyEnabledChange(e.currentTarget.checked)}
-        />{' '}
-        <HoverCard width={280} shadow="md">
-          <HoverCard.Target>
-            <CircleHelp size={16} color="#5e5e5e" />
-          </HoverCard.Target>
-          <HoverCard.Dropdown>
-            <Text size="sm">
-              The command regular expression <Code>abc[[xyz]]</Code> means
-              <Code>abc(x(y(z)?)?)?</Code> and will match <Code>abc</Code>,{' '}
-              <Code>abcx</Code>, <Code>abcxy</Code>, and <Code>abcxyz</Code>.
-            </Text>
-          </HoverCard.Dropdown>
-        </HoverCard>
-      </Group>
-    </Stack>
+        <SimpleGrid
+          type="container"
+          cols={{ base: 1, '28rem': 2 }}
+          spacing="sm"
+        >
+          <TextInput
+            label="Template name"
+            placeholder="e.g. show_version"
+            leftSection={<Search size={16} aria-hidden="true" />}
+            disabled={filtersDisabled}
+            value={searchParams.template}
+            onChange={(e) =>
+              handleSearchParamsChange('template', e.target.value)
+            }
+            rightSection={
+              !filtersDisabled &&
+              searchParams.template && (
+                <CloseButton
+                  aria-label="Clear template name"
+                  size="sm"
+                  onClick={() => handleSearchParamsChange('template', '')}
+                />
+              )
+            }
+          />
+          <TextInput
+            label="Command"
+            placeholder="e.g. show version"
+            leftSection={<Terminal size={16} aria-hidden="true" />}
+            disabled={filtersDisabled}
+            value={searchParams.command}
+            onChange={(e) =>
+              handleSearchParamsChange('command', e.target.value)
+            }
+            rightSection={
+              !filtersDisabled &&
+              searchParams.command && (
+                <CloseButton
+                  aria-label="Clear command"
+                  size="sm"
+                  onClick={() => handleSearchParamsChange('command', '')}
+                />
+              )
+            }
+          />
+        </SimpleGrid>
+        <Divider />
+        <Group gap={8} justify="space-between">
+          <Group gap="sm">
+            <Switch
+              size="sm"
+              label="Match both fields"
+              disabled={filtersDisabled}
+              checked={isAndCondition}
+              onChange={(e) =>
+                handleAndConditionChange(e.currentTarget.checked)
+              }
+            />
+            <Switch
+              size="sm"
+              label="Fuzzy match"
+              disabled={filtersDisabled}
+              checked={isFuzzyEnabled}
+              onChange={(e) =>
+                handleFuzzyEnabledChange(e.currentTarget.checked)
+              }
+            />
+          </Group>
+          <Popover width={260} shadow="md" withArrow>
+            <Popover.Target>
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                aria-label="About command patterns"
+              >
+                <CircleHelp size={16} />
+              </ActionIcon>
+            </Popover.Target>
+            <Popover.Dropdown>
+              <Text size="sm">
+                The command pattern <Code>abc[[xyz]]</Code> matches{' '}
+                <Code>abc</Code>, <Code>abcx</Code>, <Code>abcxy</Code>, and{' '}
+                <Code>abcxyz</Code>.
+              </Text>
+            </Popover.Dropdown>
+          </Popover>
+        </Group>
+      </Stack>
+    </Paper>
   );
 };
