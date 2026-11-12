@@ -25,7 +25,7 @@ export const setSegmentedControlPanelState = (
   }
 };
 
-export const setChipPanelState = (
+export const syncPanelVisibility = (
   isOpen: boolean,
   ref: RefObject<PanelImperativeHandle | null>,
   actions: DisclosureActions,
