@@ -1,5 +1,7 @@
 import { useCallback } from 'react';
 
+import { formatTextFsmCell } from '@/features/textfsm/formatCell';
+
 import type { TextFsmRecord } from '@/features/textfsm/types';
 
 type DataDeliverParams = {
@@ -14,7 +16,7 @@ export const useDataDeliver = ({ header, results }: DataDeliverParams) => {
       const rowsString = results
         .map((row) =>
           header
-            .map((key) => String(row[key] ?? '').replace(/\t/g, ' '))
+            .map((key) => formatTextFsmCell(row[key], ',').replace(/\t/g, ' '))
             .join('\t'),
         )
         .join('\n');
