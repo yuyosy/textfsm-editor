@@ -66,7 +66,8 @@ app.add_middleware(
 app.add_middleware(GZipMiddleware, minimum_size=1000, compresslevel=5)
 
 app.mount("/static", StaticFiles(directory=settings.static_dir), name="static")
-app.mount("/assets", StaticFiles(directory=settings.assets_dir), name="assets")
+if settings.is_development or settings.assets_dir != settings.static_dir / "assets":
+    app.mount("/assets", StaticFiles(directory=settings.assets_dir), name="assets")
 
 
 @app.get("/", include_in_schema=False)
@@ -99,3 +100,9 @@ async def health_check():
         "status": "healthy",
         "version": settings.app_version,
     }
+
+
+if not settings.is_development:
+    # Vite's public files are served at their original paths. Register this
+    # after the API and health routes so the root mount does not handle them.
+    app.mount("/", StaticFiles(directory=settings.static_dir), name="frontend")
