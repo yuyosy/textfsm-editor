@@ -19,7 +19,7 @@ export const RelatedLinksSection = () => {
               </Table.Th>
               <Table.Td>
                 <Anchor
-                  href="https://github.com/yuyosy/textfsm-editor.react.web/"
+                  href="https://github.com/yuyosy/textfsm-editor/"
                   target="_blank"
                   fz={14}
                 >
@@ -36,7 +36,7 @@ export const RelatedLinksSection = () => {
               </Table.Th>
               <Table.Td>
                 <Anchor
-                  href="https://github.com/yuyosy/textfsm-editor.react.web/releases"
+                  href="https://github.com/yuyosy/textfsm-editor/releases"
                   target="_blank"
                   fz={14}
                 >
