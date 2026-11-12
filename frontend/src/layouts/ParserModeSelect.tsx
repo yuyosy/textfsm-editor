@@ -1,20 +1,19 @@
 import { useState } from 'react';
 
 import { ActionIcon, Group, Popover, Select, Stack, Text } from '@mantine/core';
-import { useAtom, useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { CircleHelp } from 'lucide-react';
 
-import { responseStateAtom, resultViewValueAtom } from '@/features/state/atoms';
+import { changeParserModeAtom } from '@/features/state/actionAtoms';
 import { parserModeAtom } from '@/features/state/storageAtoms';
-import { cancelParsing, primaryMode } from '@/features/textfsm/parserSelection';
+import { primaryMode } from '@/features/textfsm/parserSelection';
 
 const isPyodide = primaryMode === 'pyodide';
 const primaryLabel = isPyodide ? 'Pyodide' : 'Backend';
 
 export const ParserModeSelect = () => {
-  const [mode, setMode] = useAtom(parserModeAtom);
-  const setResponseState = useSetAtom(responseStateAtom);
-  const setResult = useSetAtom(resultViewValueAtom);
+  const mode = useAtomValue(parserModeAtom);
+  const changeMode = useSetAtom(changeParserModeAtom);
   const [helpOpened, setHelpOpened] = useState(false);
   const [dropdownOpened, setDropdownOpened] = useState(false);
   return (
@@ -80,12 +79,7 @@ export const ParserModeSelect = () => {
           { value: 'local', label: 'JS compatibility' },
         ]}
         onChange={(value) => {
-          if ((value !== 'local' && value !== primaryMode) || value === mode)
-            return;
-          cancelParsing();
-          setResponseState('init');
-          setResult(undefined);
-          setMode(value);
+          if (value === 'local' || value === primaryMode) changeMode(value);
         }}
       />
     </Group>

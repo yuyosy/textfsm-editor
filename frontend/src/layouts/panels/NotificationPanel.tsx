@@ -1,8 +1,10 @@
+import { useEffect } from 'react';
 import { Panel, type PanelImperativeHandle } from 'react-resizable-panels';
 
 import {
   ActionIcon,
   Box,
+  Button,
   Center,
   Flex,
   Group,
@@ -11,16 +13,23 @@ import {
   Text,
   Tooltip,
 } from '@mantine/core';
-import { useAtom, useAtomValue } from 'jotai';
-import { useResetAtom } from 'jotai/utils';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { BellOff, Eraser } from 'lucide-react';
 
 import { AlertCard } from '@/components/AlertCard';
+import { changeParserModeAtom } from '@/features/state/actionAtoms';
 import {
+  addNotificationAtom,
   clearNotificationsAtom,
   notificationsAtom,
+  pyodideFallbackNotificationIdAtom,
+  pyodideLoadStatusAtom,
   removeNotificationAtom,
 } from '@/features/state/atoms';
+import { autoRequestEnabledAtom } from '@/features/state/storageAtoms';
+import { getParseRunner } from '@/features/textfsm/parserSelection';
+import { useSendRequest } from '@/hooks/useSendRequest';
+import { PyodideLoadCard } from './PyodideLoadCard';
 
 import type { RefObject } from 'react';
 import type { Notification } from '@/types';
@@ -50,8 +59,32 @@ export const NotificationPanel = ({
   onResizeHandler,
 }: NotificationPanelProps) => {
   const notifications = useAtomValue(notificationsAtom);
-  const clearNotifications = useResetAtom(clearNotificationsAtom);
-  const [, removeNotification] = useAtom(removeNotificationAtom);
+  const loadStatus = useAtomValue(pyodideLoadStatusAtom);
+  const loading = loadStatus === 'runtime' || loadStatus === 'package';
+  const fallbackNotificationId = useAtomValue(
+    pyodideFallbackNotificationIdAtom,
+  );
+  const hasLoadStatus = loadStatus !== null;
+  const clearNotifications = useSetAtom(clearNotificationsAtom);
+  const removeNotification = useSetAtom(removeNotificationAtom);
+  const autoParse = useAtomValue(autoRequestEnabledAtom);
+  const changeMode = useSetAtom(changeParserModeAtom);
+  const notify = useSetAtom(addNotificationAtom);
+  const sendWithJs = useSendRequest({ parseRunner: getParseRunner('local') });
+
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (!hasLoadStatus || !panel) return;
+    if (panel.isCollapsed()) panel.expand();
+    if (panel.getSize().inPixels < 180) panel.resize(180);
+  }, [hasLoadStatus, panelRef]);
+
+  const handleUseJs = async () => {
+    changeMode('local');
+    if (autoParse) return;
+    const { notification } = await sendWithJs(true);
+    if (notification) notify(notification);
+  };
 
   return (
     <Panel
@@ -78,7 +111,12 @@ export const NotificationPanel = ({
             </ActionIcon>
           </Tooltip>
         </Group>
-        {notifications.length === 0 ? (
+        {loading && (
+          <Box px={10} pb={8}>
+            <PyodideLoadCard status={loadStatus} />
+          </Box>
+        )}
+        {notifications.length === 0 && !loading ? (
           <Center w="100%" h="100%">
             <Flex align="center" direction="column">
               <Box className="mantine-datatable-empty-state-icon">
@@ -102,7 +140,28 @@ export const NotificationPanel = ({
                   mainTitle={notification.title}
                   timestamp={notification.timestamp}
                   color={getColorByType(notification.type)}
-                  message={notification.message}
+                  message={
+                    notification.id === fallbackNotificationId
+                      ? 'Select Send to try again.'
+                      : notification.message
+                  }
+                  action={
+                    notification.id === fallbackNotificationId && (
+                      <Button
+                        size="xs"
+                        variant="light"
+                        color="blue"
+                        onClick={handleUseJs}
+                        styles={{ label: { whiteSpace: 'normal' } }}
+                        h="auto"
+                        fullWidth
+                        mih={36}
+                        py={6}
+                      >
+                        Use JS compatibility
+                      </Button>
+                    )
+                  }
                   onClose={() => removeNotification(notification.id)}
                 />
               ))}

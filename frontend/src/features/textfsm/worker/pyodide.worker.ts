@@ -15,7 +15,7 @@ type PyodideRuntime = {
 
 let parserPromise: Promise<PythonParser> | undefined;
 
-async function initialize(): Promise<PythonParser> {
+async function initialize(id: string): Promise<PythonParser> {
   // Check that this worker can compile Wasm before downloading the runtime.
   await WebAssembly.compile(Uint8Array.of(0, 97, 115, 109, 1, 0, 0, 0));
   const runtimeUrl = new URL(
@@ -30,6 +30,7 @@ async function initialize(): Promise<PythonParser> {
     loadPyodide(): Promise<PyodideRuntime>;
   };
   const pyodide = await loadPyodide();
+  send({ id, type: 'loading-package' });
   await pyodide.loadPackage(wheelUrl);
   return pyodide.runPython(`
 import json
@@ -63,7 +64,7 @@ function fail(id: string, code: TextFsmErrorCode, message = ''): void {
 async function parseRequest({ id, input }: WorkerRequest): Promise<void> {
   let parse: PythonParser;
   try {
-    parserPromise ??= initialize();
+    parserPromise ??= initialize(id);
     parse = await parserPromise;
   } catch {
     fail(id, 'PYODIDE_INIT');

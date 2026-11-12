@@ -20,8 +20,10 @@ missing, verify the archive SHA-256, and generate the static template assets.
 - **Backend** sends the input and template to Python TextFSM via
   `POST /api/parse`. Only the Backend build includes the API client.
 - **Pyodide** runs Python TextFSM 2.1.0 in a browser Worker. The first Pyodide
-  parse loads the runtime from jsDelivr and the package from PyPI. If it fails
-  to start, retry or select **JS compatibility** in the toolbar.
+  parse loads the runtime from jsDelivr and the package from PyPI. The
+  Notifications panel shows the loading stage and lets you cancel. After a
+  cancellation or startup error, select **Send** to retry or use the card to
+  switch to **JS compatibility** and parse the current input.
   Both options in the Pyodide build process input and templates locally.
 
 The help button explains the available modes. The selection is saved in local

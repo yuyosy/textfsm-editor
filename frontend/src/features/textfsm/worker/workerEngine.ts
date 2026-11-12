@@ -11,6 +11,8 @@ import type { WorkerFactory, WorkerLike, WorkerResponse } from './protocol';
 type ActiveRequest = {
   abortListener: (() => void) | undefined;
   id: string;
+  initializing: boolean;
+  onInitializationChange: TextFsmParseOptions['onInitializationChange'];
   reject: (reason: Error) => void;
   resolve: (result: TextFsmParseResult) => void;
   signal: AbortSignal | undefined;
@@ -29,6 +31,7 @@ export const createWorkerTextFsmEngine = (
   let active: ActiveRequest | undefined;
   let disposed = false;
   let worker: WorkerLike | undefined;
+  let workerReady = false;
 
   const clearRequestResources = (request: ActiveRequest): void => {
     clearTimeout(request.timeout);
@@ -48,6 +51,13 @@ export const createWorkerTextFsmEngine = (
 
     active = undefined;
     clearRequestResources(request);
+
+    if (request.initializing && 'error' in outcome) {
+      const interrupted =
+        outcome.error instanceof TextFsmEngineError &&
+        outcome.error.code === 'ABORTED';
+      request.onInitializationChange?.(interrupted ? 'interrupted' : 'failed');
+    }
 
     if ('result' in outcome) {
       request.resolve(outcome.result);
@@ -90,7 +100,16 @@ export const createWorkerTextFsmEngine = (
     }
 
     if (response.type === 'started') {
+      if (request.initializing) {
+        workerReady = true;
+        request.initializing = false;
+        request.onInitializationChange?.('ready');
+      }
       startParseTimer(request);
+      return;
+    }
+    if (response.type === 'loading-package') {
+      if (request.initializing) request.onInitializationChange?.('package');
       return;
     }
     if (response.type === 'success') {
@@ -122,7 +141,12 @@ export const createWorkerTextFsmEngine = (
 
     settle(
       request,
-      { error: new TextFsmEngineError('WORKER_ERROR', WORKER_ERROR_MESSAGE) },
+      {
+        error: new TextFsmEngineError(
+          request.initializing ? 'PYODIDE_INIT' : 'WORKER_ERROR',
+          WORKER_ERROR_MESSAGE,
+        ),
+      },
       true,
     );
   };
@@ -145,6 +169,7 @@ export const createWorkerTextFsmEngine = (
   const retireWorker = (): void => {
     const retiringWorker = worker;
     worker = undefined;
+    workerReady = false;
     retiringWorker?.terminate();
   };
 
@@ -182,10 +207,15 @@ export const createWorkerTextFsmEngine = (
       );
     }
 
+    const initializing = initializationTimeoutMs !== undefined && !workerReady;
     const activeWorker = ensureWorker();
     if (activeWorker === undefined) {
+      if (initializing) options.onInitializationChange?.('failed');
       return Promise.reject(
-        new TextFsmEngineError('WORKER_ERROR', WORKER_ERROR_MESSAGE),
+        new TextFsmEngineError(
+          initializing ? 'PYODIDE_INIT' : 'WORKER_ERROR',
+          WORKER_ERROR_MESSAGE,
+        ),
       );
     }
 
@@ -193,13 +223,15 @@ export const createWorkerTextFsmEngine = (
       const request: ActiveRequest = {
         abortListener: undefined,
         id: crypto.randomUUID(),
+        initializing,
+        onInitializationChange: options.onInitializationChange,
         reject,
         resolve,
         signal: options.signal,
         timeout: undefined,
         parseTimeoutMs: options.timeoutMs ?? TEXTFSM_LIMITS.timeoutMs,
       };
-      if (initializationTimeoutMs === undefined) {
+      if (!initializing) {
         startParseTimer(request);
       } else {
         request.timeout = setTimeout(() => {
@@ -234,12 +266,16 @@ export const createWorkerTextFsmEngine = (
       }
 
       try {
+        if (initializing) request.onInitializationChange?.('runtime');
         activeWorker.postMessage({ id: request.id, input, type: 'parse' });
       } catch {
         settle(
           request,
           {
-            error: new TextFsmEngineError('WORKER_ERROR', WORKER_ERROR_MESSAGE),
+            error: new TextFsmEngineError(
+              initializing ? 'PYODIDE_INIT' : 'WORKER_ERROR',
+              WORKER_ERROR_MESSAGE,
+            ),
           },
           true,
         );
@@ -254,10 +290,11 @@ export const createWorkerTextFsmEngine = (
 
     disposed = true;
     if (active !== undefined) {
-      const request = active;
-      active = undefined;
-      clearRequestResources(request);
-      request.reject(new TextFsmEngineError('ABORTED', ABORTED_MESSAGE));
+      settle(
+        active,
+        { error: new TextFsmEngineError('ABORTED', ABORTED_MESSAGE) },
+        false,
+      );
     }
     retireWorker();
   };

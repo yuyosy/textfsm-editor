@@ -2,6 +2,7 @@ import { atom } from 'jotai';
 import { atomWithReset } from 'jotai/utils';
 
 import type { StatusBadgeVariant } from '@/components/StatusBadge';
+import type { ParserInitializationPhase } from '@/features/textfsm/types';
 import type { ModalState } from '@/layouts/modals/types';
 import type { Notification, NotificationItemInfo, ResultItem } from '@/types';
 
@@ -15,6 +16,17 @@ export const controlModalAtom = atom<ModalState>({
 });
 
 export const notificationsAtom = atom<Notification[]>([]);
+export type PyodideLoadStatus =
+  | Exclude<ParserInitializationPhase, 'interrupted'>
+  | 'cancelled';
+export const pyodideLoadStatusAtom = atom<PyodideLoadStatus | null>(null);
+export const pyodideFallbackNotificationIdAtom = atom<string | undefined>(
+  undefined,
+);
+export const isPyodideLoadingAtom = atom((get) => {
+  const status = get(pyodideLoadStatusAtom);
+  return status === 'runtime' || status === 'package';
+});
 
 // add notification action
 export const addNotificationAtom = atom(
@@ -30,6 +42,7 @@ export const addNotificationAtom = atom(
       timestamp: new Date().toISOString(),
     };
     set(notificationsAtom, [newNotification, ...notifications]);
+    return newNotification.id;
   },
 );
 

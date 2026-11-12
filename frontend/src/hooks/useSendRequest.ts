@@ -3,8 +3,15 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useAtomCallback } from 'jotai/utils';
 
-import { historyAutoSaveHandler } from '@/features/state/actionAtoms';
-import { responseStateAtom, resultViewValueAtom } from '@/features/state/atoms';
+import {
+  historyAutoSaveHandler,
+  reportPyodideLoadStatusAtom,
+} from '@/features/state/actionAtoms';
+import {
+  pyodideLoadStatusAtom,
+  responseStateAtom,
+  resultViewValueAtom,
+} from '@/features/state/atoms';
 import {
   autoRequestEnabledAtom,
   parseRequestDelayAtom,
@@ -40,6 +47,7 @@ export const useSendRequest = (options: UseSendRequestOptions = {}) => {
   );
   const setResponseState = useSetAtom(responseStateAtom);
   const setResultViewValue = useSetAtom(resultViewValueAtom);
+  const reportPyodideLoadStatus = useSetAtom(reportPyodideLoadStatusAtom);
   const autoSaveHandler = useSetAtom(historyAutoSaveHandler);
   const ownerIdRef = useRef<string>(crypto.randomUUID());
 
@@ -56,10 +64,12 @@ export const useSendRequest = (options: UseSendRequestOptions = {}) => {
         return { response: null, notification: null };
       }
       const data = readRawText();
-      const result = await parseRunner.parse(ownerIdRef.current, {
-        dataString: data,
-        templateString: template,
-      });
+      const result = await parseRunner.parse(
+        ownerIdRef.current,
+        { dataString: data, templateString: template },
+        (phase) =>
+          reportPyodideLoadStatus(phase === 'interrupted' ? null : phase),
+      );
 
       if (result.response === null) {
         return result;
@@ -92,6 +102,7 @@ export const useSendRequest = (options: UseSendRequestOptions = {}) => {
       parseRunner,
       setResponseState,
       setResultViewValue,
+      reportPyodideLoadStatus,
       autoSaveHandler,
     ],
   );
@@ -109,12 +120,20 @@ export const useAutoRequest = (
   const enabled = useAtomValue(autoRequestEnabledAtom);
   const delay = useAtomValue(parseRequestDelayAtom);
   const sendRequest = useSendRequest({ parseRunner });
+  const canAutoParse = useAtomCallback(
+    useCallback((get) => {
+      if (get(parserModeAtom) !== 'pyodide') return true;
+      const status = get(pyodideLoadStatusAtom);
+      return status !== 'cancelled' && status !== 'failed';
+    }, []),
+  );
   // biome-ignore lint/correctness/useExhaustiveDependencies: Reparse on raw input changes; sendRequest reads its current atom value.
   useEffect(() => {
     if (!enabled) return;
     parseRunner.invalidateActive();
     if (template === '') return;
     const timeout = setTimeout(async () => {
+      if (!canAutoParse()) return;
       const result = await sendRequest(true);
       if (result.notification) onNotification?.(result.notification);
     }, delay);
@@ -126,6 +145,7 @@ export const useAutoRequest = (
     delay,
     parseRunner,
     sendRequest,
+    canAutoParse,
     onNotification,
   ]);
 };
