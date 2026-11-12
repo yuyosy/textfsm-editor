@@ -30,13 +30,19 @@ const theme = createTheme({
 });
 
 const loadShiki = async () => {
-  const { createHighlighter } = await import('shiki');
-  const shiki = await createHighlighter({
-    langs: ['json'],
-    themes: ['light-plus', 'andromeeda'],
+  const [{ createHighlighterCore }, { createJavaScriptRegexEngine }] =
+    await Promise.all([
+      import('shiki/core'),
+      import('shiki/engine/javascript'),
+    ]);
+  return createHighlighterCore({
+    engine: createJavaScriptRegexEngine(),
+    langs: [import('shiki/langs/json.mjs')],
+    themes: [
+      import('shiki/themes/light-plus.mjs'),
+      import('shiki/themes/andromeeda.mjs'),
+    ],
   });
-
-  return shiki;
 };
 const shikiAdapter = createShikiAdapter(loadShiki);
 
