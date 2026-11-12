@@ -3,6 +3,12 @@ export type TextFsmCellValue = string | TextFsmListItem[];
 export type TextFsmParserMode = 'local' | 'backend' | 'pyodide';
 export type TextFsmRecord = Record<string, TextFsmCellValue>;
 
+export const TEXTFSM_PARSER_LABELS: Record<TextFsmParserMode, string> = {
+  local: 'JS compatibility',
+  backend: 'Backend',
+  pyodide: 'Pyodide',
+};
+
 export interface TextFsmParseInput {
   templateString: string;
   dataString: string;

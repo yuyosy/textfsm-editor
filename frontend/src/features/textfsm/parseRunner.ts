@@ -11,6 +11,7 @@ import type {
   TextFsmEngine,
   TextFsmParseInput,
   TextFsmParseOptions,
+  TextFsmParserMode,
 } from './types';
 
 export interface ParseRunnerResult {
@@ -41,6 +42,7 @@ export interface TextFsmParseRunner {
 
 export const createTextFsmParseRunner = (
   engine: TextFsmEngine,
+  parserMode: TextFsmParserMode,
 ): TextFsmParseRunner => {
   let active: ActiveRequest | undefined;
   let nextRequestId = 0;
@@ -88,7 +90,7 @@ export const createTextFsmParseRunner = (
         active = undefined;
         const response = createSuccessfulResultItem(result);
         return {
-          notification: createNotificationForResultItem(response),
+          notification: createNotificationForResultItem(response, parserMode),
           response,
         };
       } catch (error) {
@@ -105,7 +107,7 @@ export const createTextFsmParseRunner = (
         return {
           notification: reportedInitializationFailure
             ? null
-            : createNotificationForResultItem(response),
+            : createNotificationForResultItem(response, parserMode),
           response,
         };
       }
@@ -113,4 +115,4 @@ export const createTextFsmParseRunner = (
   };
 };
 
-export const textFsmParseRunner = createTextFsmParseRunner(textFsmEngine);
+export const textFsmParseRunner = createTextFsmParseRunner(textFsmEngine, 'local');

@@ -28,6 +28,7 @@ import {
 } from '@/features/state/atoms';
 import { autoRequestEnabledAtom } from '@/features/state/storageAtoms';
 import { getParseRunner } from '@/features/textfsm/parserSelection';
+import { TEXTFSM_PARSER_LABELS } from '@/features/textfsm/types';
 import { useSendRequest } from '@/hooks/useSendRequest';
 import { PyodideLoadCard } from './PyodideLoadCard';
 
@@ -140,6 +141,11 @@ export const NotificationPanel = ({
                   mainTitle={notification.title}
                   timestamp={notification.timestamp}
                   color={getColorByType(notification.type)}
+                  badgeLabel={
+                    notification.parserMode
+                      ? TEXTFSM_PARSER_LABELS[notification.parserMode]
+                      : undefined
+                  }
                   message={
                     notification.id === fallbackNotificationId
                       ? 'Select Send to try again.'

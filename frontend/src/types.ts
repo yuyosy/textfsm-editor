@@ -1,4 +1,4 @@
-import type { TextFsmRecord } from '@/features/textfsm/types';
+import type { TextFsmParserMode, TextFsmRecord } from '@/features/textfsm/types';
 import type { StatusBadgeVariant } from './components/StatusBadge';
 
 export interface ResponseResult {
@@ -58,6 +58,7 @@ export interface Notification {
   title: string;
   message: string;
   timestamp: string;
+  parserMode?: TextFsmParserMode;
   metadata?: Record<string, unknown>;
 }
 

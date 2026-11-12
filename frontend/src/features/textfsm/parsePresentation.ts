@@ -1,7 +1,7 @@
 import { TextFsmParseError } from './types';
 
 import type { NotificationItemInfo, ResultError, ResultItem } from '@/types';
-import type { TextFsmErrorCode, TextFsmParseResult } from './types';
+import type { TextFsmErrorCode, TextFsmParseResult, TextFsmParserMode } from './types';
 
 const SUCCESS_MESSAGE = 'Parse completed.';
 
@@ -113,6 +113,7 @@ export const createFailedResultItem = (error: unknown): ResultItem => ({
 
 export const createNotificationForResultItem = (
   result: ResultItem,
+  parserMode: TextFsmParserMode,
 ): NotificationItemInfo | null => {
   if (result.ok && result.data !== undefined) {
     const recordCount = result.data.results.length;
@@ -127,6 +128,7 @@ export const createNotificationForResultItem = (
       type: 'api',
       title: result.data.message,
       message,
+      parserMode,
       metadata: {
         recordCount,
         results: result.data.results,
@@ -139,6 +141,7 @@ export const createNotificationForResultItem = (
       type: 'error',
       title: result.errors[0].reason,
       message: result.errors[0].message,
+      parserMode,
       metadata: {
         errors: result.errors,
       },

@@ -7,9 +7,10 @@ import { CircleHelp } from 'lucide-react';
 import { changeParserModeAtom } from '@/features/state/actionAtoms';
 import { parserModeAtom } from '@/features/state/storageAtoms';
 import { primaryMode } from '@/features/textfsm/parserSelection';
+import { TEXTFSM_PARSER_LABELS } from '@/features/textfsm/types';
 
 const isPyodide = primaryMode === 'pyodide';
-const primaryLabel = isPyodide ? 'Pyodide' : 'Backend';
+const primaryLabel = TEXTFSM_PARSER_LABELS[primaryMode];
 
 export const ParserModeSelect = () => {
   const mode = useAtomValue(parserModeAtom);
@@ -76,7 +77,7 @@ export const ParserModeSelect = () => {
         onDropdownClose={() => setDropdownOpened(false)}
         data={[
           { value: primaryMode, label: primaryLabel },
-          { value: 'local', label: 'JS compatibility' },
+          { value: 'local', label: TEXTFSM_PARSER_LABELS.local },
         ]}
         onChange={(value) => {
           if (value === 'local' || value === primaryMode) changeMode(value);
