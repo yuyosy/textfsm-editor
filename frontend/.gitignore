@@ -1,5 +1,6 @@
 vendor/ntc-templates/templates/**
 src/public/ntc-templates/templates/**
+!/.env.pyodide
 
 # Logs
 logs

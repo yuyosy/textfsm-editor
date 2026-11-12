@@ -3,10 +3,6 @@ import { TEXTFSM_LIMITS } from '../limits';
 import type { TextFsmErrorCode, TextFsmParseResult } from '../types';
 import type { WorkerRequest, WorkerResponse } from './protocol';
 
-const runtimeUrl = 'https://cdn.jsdelivr.net/pyodide/v0.29.4/full/pyodide.mjs';
-const textfsmWheel =
-  'https://files.pythonhosted.org/packages/82/1a/ab772f8479adedad1bdd12dd5c2bf6facf3fad8d04f35b4f4053201d202d/textfsm-2.1.0-py2.py3-none-any.whl';
-
 type PythonResult =
   | { result: TextFsmParseResult }
   | { error: 'TOO_MANY_COLUMNS' | 'TOO_MANY_RECORDS' }
@@ -22,11 +18,19 @@ let parserPromise: Promise<PythonParser> | undefined;
 async function initialize(): Promise<PythonParser> {
   // Check that this worker can compile Wasm before downloading the runtime.
   await WebAssembly.compile(Uint8Array.of(0, 97, 115, 109, 1, 0, 0, 0));
+  const runtimeUrl = new URL(
+    import.meta.env.VITE_PYODIDE_RUNTIME_URL,
+    self.location.origin,
+  ).href;
+  const wheelUrl = new URL(
+    import.meta.env.VITE_TEXTFSM_WHEEL_URL,
+    self.location.origin,
+  ).href;
   const { loadPyodide } = (await import(/* @vite-ignore */ runtimeUrl)) as {
     loadPyodide(): Promise<PyodideRuntime>;
   };
   const pyodide = await loadPyodide();
-  await pyodide.loadPackage(textfsmWheel);
+  await pyodide.loadPackage(wheelUrl);
   return pyodide.runPython(`
 import json
 from io import StringIO

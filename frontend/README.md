@@ -38,6 +38,21 @@ The frontend adds `/api/parse`; configure the origin without that suffix.
 For a separate backend origin, allow the frontend origin in the backend's
 `CORS_ALLOWED_ORIGINS`. Restart Vite or rebuild after changing environment values.
 
+## Runtime asset URLs
+
+The static build reads the pinned defaults in `.env.pyodide`. To use a mirror
+or serve the same files yourself, override these settings in
+`.env.pyodide.local` or in the build environment:
+
+| Setting | Asset |
+| --- | --- |
+| `VITE_PYODIDE_RUNTIME_URL` | Pyodide's `pyodide.mjs`. Keep the rest of the runtime distribution alongside it. |
+| `VITE_TEXTFSM_WHEEL_URL` | The TextFSM wheel for the version pinned in `backend/uv.lock`. |
+| `VITE_MONACO_BASE_URL` | Optional Monaco loader base ending in `/min/vs`. Set it in `.env.local` for both builds. |
+
+Use an absolute URL or a path starting with `/` on the application origin.
+Rebuild after changing the settings. The built files contain these public URLs.
+
 ## Updating ntc-templates
 
 Run from `frontend` with Node.js 22 or later:

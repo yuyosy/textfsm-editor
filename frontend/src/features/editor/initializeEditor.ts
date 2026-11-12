@@ -8,6 +8,11 @@ import { textfsmThemeLight as themeLight } from '@/features/editor/themes/ThemeL
 
 import type * as primitiveMonaco from 'monaco-editor';
 
+const monacoBaseUrl = import.meta.env.VITE_MONACO_BASE_URL;
+if (monacoBaseUrl) {
+  loader.config({ paths: { vs: monacoBaseUrl } });
+}
+
 export const initializeTextFSMEditor = () => {
   loader.init().then((monaco) => {
     monaco.editor.defineTheme('theme-dark', themeDark);

@@ -10,7 +10,7 @@ import packageJson from './package.json' with { type: 'json' };
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => {
   // https://vite.dev/config/#using-environment-variables-in-config
-  const env = loadEnv(mode, process.cwd());
+  const env = loadEnv(mode, import.meta.dirname);
   const usePyodide = mode === 'pyodide';
 
   // Experimental -->
@@ -22,6 +22,7 @@ export default defineConfig(({ command, mode }) => {
 
   return {
     root: 'src',
+    envDir: import.meta.dirname,
     base: usePyodide ? './' : '/',
     plugins: [react()],
     worker: { format: usePyodide ? 'es' : 'iife' },
