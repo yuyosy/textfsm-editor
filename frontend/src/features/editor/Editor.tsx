@@ -4,7 +4,6 @@ import {
   Editor as MonacoEditor,
   type EditorProps as MonacoEditorProps,
   type OnChange,
-  type OnMount,
 } from '@monaco-editor/react';
 
 const monacoOptions: MonacoEditorProps['options'] = {
@@ -22,15 +21,15 @@ const monacoOptions: MonacoEditorProps['options'] = {
 export const Editor: React.FC<{
   defaultLanguage: string;
   theme: string;
-  onMount: OnMount;
+  value: string;
   onChange: OnChange;
-}> = memo(({ defaultLanguage, theme, onMount, onChange }) => {
+}> = memo(({ defaultLanguage, theme, value, onChange }) => {
   return (
     <MonacoEditor
       height="100%"
       defaultLanguage={defaultLanguage}
       theme={theme}
-      onMount={onMount}
+      value={value}
       onChange={onChange}
       options={monacoOptions}
     />

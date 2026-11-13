@@ -1,50 +1,33 @@
-import { useEffect, useRef } from 'react';
+import { useCallback } from 'react';
 
 import { useMantineColorScheme } from '@mantine/core';
 import { useAtom } from 'jotai';
 
 import { Editor } from '@/features/editor/Editor';
 import { rawTextEditorValueAtom } from '@/features/state/storageAtoms';
-import { debounce } from '@/utils/debounce';
 
-import type { OnChange, OnMount } from '@monaco-editor/react';
-import type { editor } from 'monaco-editor';
+import type { OnChange } from '@monaco-editor/react';
 
 export const RawTextEditor = () => {
   const { colorScheme } = useMantineColorScheme();
-  const [rawTextEditorValue, setRawTextEditorValue] = useAtom(
-    rawTextEditorValueAtom,
-  );
-  const rawTextEditorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const [value, setValue] = useAtom(rawTextEditorValueAtom);
 
-  const saveRawTextToSessionStorage = debounce((value: string) => {
-    setRawTextEditorValue(value);
-  }, 500);
-
-  const handleRawTextEditorDidMount: OnMount = (editor) => {
-    rawTextEditorRef.current = editor;
-    rawTextEditorRef.current.setValue(rawTextEditorValue);
-  };
-  const handleRawTextEditorChange: OnChange = (value) => {
-    if (value !== undefined) {
-      saveRawTextToSessionStorage(value);
-    }
-  };
-
-  useEffect(() => {
-    if (rawTextEditorRef.current) {
-      if (rawTextEditorRef.current.getValue() !== rawTextEditorValue) {
-        rawTextEditorRef.current.setValue(rawTextEditorValue);
+  // Keep the atom current; delayed writes can overwrite newer editor content.
+  const handleChange = useCallback<OnChange>(
+    (value) => {
+      if (value !== undefined) {
+        setValue(value);
       }
-    }
-  }, [rawTextEditorValue]);
+    },
+    [setValue],
+  );
 
   return (
     <Editor
       defaultLanguage="plain"
       theme={colorScheme === 'dark' ? 'theme-dark' : 'theme-light'}
-      onMount={handleRawTextEditorDidMount}
-      onChange={handleRawTextEditorChange}
+      value={value}
+      onChange={handleChange}
     />
   );
 };
