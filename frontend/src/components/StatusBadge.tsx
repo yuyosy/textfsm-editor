@@ -15,12 +15,12 @@ const badgeStyles: {
     label: string;
   };
 } = {
-  init: { styleColor: 'gray.9', markColor: '#adb5bd', label: 'Init' },
-  success: { styleColor: 'teal.9', markColor: '#12b886', label: 'Success' },
-  error: { styleColor: 'red.9', markColor: '#fa5252', label: 'Error' },
+  init: { styleColor: 'gray', markColor: '#adb5bd', label: 'Init' },
+  success: { styleColor: 'teal', markColor: '#12b886', label: 'Success' },
+  error: { styleColor: 'red', markColor: '#fa5252', label: 'Error' },
   warning: { styleColor: 'orange', markColor: '#fd7e14', label: 'Warning' },
-  info: { styleColor: 'cyan.9', markColor: '#15aabf', label: 'Info' },
-  debug: { styleColor: 'grape.9', markColor: '#be4bdb', label: 'Debug' },
+  info: { styleColor: 'cyan', markColor: '#15aabf', label: 'Info' },
+  debug: { styleColor: 'grape', markColor: '#be4bdb', label: 'Debug' },
 };
 
 interface StatusBadgeProps {
