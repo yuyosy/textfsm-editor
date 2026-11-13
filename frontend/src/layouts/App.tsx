@@ -3,6 +3,7 @@ import {
   createShikiAdapter,
 } from '@mantine/code-highlight';
 import {
+  ActionIcon,
   AppShell,
   colorsTuple,
   createTheme,
@@ -18,6 +19,19 @@ import { AppNavbar } from './AppNav';
 
 const theme = createTheme({
   black: '#484951',
+  components: {
+    ActionIcon: ActionIcon.extend({
+      vars: (_theme, { color, variant }) => ({
+        root: {
+          '--ai-color':
+            color === 'gray' &&
+            (variant === 'subtle' || variant === 'transparent')
+              ? 'light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-light-color))'
+              : undefined,
+        },
+      }),
+    }),
+  },
   colors: {
     'base-dark': colorsTuple('#343637'),
     'base-light': colorsTuple('#e1e4e6'),
